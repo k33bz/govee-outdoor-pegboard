@@ -1,0 +1,40 @@
+# Operating System
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# Editor/IDE
+.vscode/
+.idea/
+*.sublime-*
+*.code-workspace
+
+# 3D Printing
+*.gcode
+*.ufp
+sliced/
+preview/
+*.log
+
+# Backups & Temp Files
+*.bak
+*.backup
+*~
+*.tmp
+
+# Build artifacts
+__pycache__/
+*.pyc
+*.egg-info/
+
+# Project-specific
+/renders/preview_*.png
+/production/
+notes.txt
+scratch/
+
+# Python venv
+venv/
+env/

@@ -1,0 +1,2 @@
+# Binary 3D model files: never apply EOL or text conversion
+*.stl binary
