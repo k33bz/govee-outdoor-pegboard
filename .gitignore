@@ -14,6 +14,7 @@ Thumbs.db
 # 3D Printing
 *.gcode
 *.ufp
+*.3mf
 sliced/
 preview/
 *.log
