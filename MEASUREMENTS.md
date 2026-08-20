@@ -7,14 +7,13 @@ itself is not included in this repository.
 
 | Quantity | Measured | v1.0.0 docs claim |
 |---|---|---|
-| Hole pitch | **4.2 mm** (0.167 in, 6 per inch) | 19.05 mm (3/4 in) |
-| Hole size | **~2.5 mm square** (2.3 x 2.7) | 19 mm square |
-| Web between holes | ~1.5 mm | n/a |
-| Open area | ~35 % | n/a |
+| Hole pitch | **3/16 in = 4.7625 mm** | 19.05 mm (3/4 in) |
+| Hole size | **2.6 to 2.8 mm square** | 19 mm square |
+| Web between holes | about 2.1 mm | n/a |
 
-The published peg is 18.8 x 18.8 mm with a 22 mm flange. That peg is **4.4 hole pitches
-wide** and roughly 7x the width of a single hole, so it cannot enter this panel at all.
-This is not a tolerance problem, it is the wrong attachment concept.
+The published peg is 18.8 x 18.8 mm with a 22 mm flange. That peg is **4 hole pitches wide**
+and roughly 7x the width of a single hole, so it cannot enter this panel at all. This is not
+a tolerance problem, it is the wrong attachment concept.
 
 ## Method
 
@@ -41,9 +40,35 @@ Rendering the model's inch lines back over the tape puts them on the inch marks.
 one-inch span next to the tape and marking hole columns inside it yields exactly 6, which
 is 25.4 / 6 = 4.23 mm, independent of any fitted model.
 
-## Correction
+## Corrections
 
-An earlier pass reported a pitch of about 5.4 mm. That figure was wrong. It assumed one
-constant 608 px per inch across the whole frame, which accumulates error toward the right
-of the image and lands the 3 to 4 inch interval visibly off by roughly 1/8 in. The
-corrected value is 4.2 mm.
+This number was wrong twice before it was right. Both failures were calibration errors, not
+arithmetic, and both are worth recording.
+
+**5.4 mm (first pass).** Assumed a single constant 608 px per inch across the whole frame.
+The tape is tilted, so scale is not constant; the error accumulates and lands the 3 to 4
+inch interval visibly off by about 1/8 in.
+
+**4.2 mm (second pass).** Fixed the constant-scale error by fitting scale as a function of
+x, but the hole pitch and the tape graduations still had to be compared across a large gap
+in **y**, and scale varies in y as well. Extrapolating across that gap biased the result low
+by about 12 %. The tell was a model-free count that came out at 6 hole columns per inch;
+3/16 in implies 5.33, and 6 was an artifact of an inch span that was itself too long.
+
+**3/16 in (current).** A second photo with the tape lying flat against the panel and only a
+4 % scale gradient. Calibrated against the red inch numerals, which are exactly one inch
+apart by definition and trivially separable by colour. At frame centre the pitch reads
+0.1874 and 0.1876 in against a nominal 0.1875, and drifts only toward the frame edges where
+lens distortion dominates.
+
+**Independent confirmation.** A printed gauge set bracketing 4.0 to 4.5 mm would not seat at
+any pitch, which is the expected outcome if the true pitch is 4.76 mm: across a 4x4 grid the
+far corner misses by roughly five times the available play.
+
+### The general lesson
+
+Calibrating a photo needs the reference and the subject at the **same place in the frame**,
+not merely in the same photo. Both bad answers came from comparing a scale measured at one
+location against a subject measured at another. Where they could not be co-located, a
+model-free count over a long span was the check that should have been trusted, and in the
+first photo it was quietly wrong because the span itself was model-derived.

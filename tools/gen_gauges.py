@@ -2,8 +2,8 @@
 """Generate test-fit gauges for the perforated enclosure panel.
 
 Two unknowns have to be separated:
-  * hole pitch, measured at 4.23 mm with roughly +/-0.1 mm of uncertainty
-  * hole size,  measured at roughly 2.5 mm square, less certain
+  * hole pitch, measured at 3/16 in (4.7625 mm) from the second, flatter photo
+  * hole size,  bracketed by test print at 2.6 to 2.8 mm
 
 peg_size_gauge  isolates hole size: one peg per tab, five widths, insert one at a time.
 pitch_gauge_*   isolates pitch: a 4x4 grid of deliberately undersized pegs, so only the
@@ -95,6 +95,15 @@ def glyph_rects(ch, x, y):
     return r, GW
 
 
+def text_width(s):
+    w = 0.0
+    for i, ch in enumerate(s):
+        w += DOTW if ch == "." else GW
+        if i < len(s)-1:
+            w += GAP
+    return w
+
+
 def text(s, x, y, z0, z1):
     tris, cx = [], x
     for ch in s:
@@ -167,11 +176,11 @@ def peg(cx, cy, width):
     return t
 
 
-def pitch_gauge(pitch, n=4, peg_w=1.9):
+def pitch_gauge(pitch, n=3, peg_w=2.1, label=None):
     span = (n-1)*pitch
     grid_x0, grid_y0 = 3.0, 3.0
-    label = f"{pitch:.1f}"
-    lw = len(label)*GW + (len(label)-1)*GAP
+    label = label if label is not None else f"{pitch:.2f}"
+    lw = text_width(label)
     W = grid_x0 + span + 3.0 + 3.0 + lw + 3.0
     Hgt = max(span + 6.0, GH + 6.0)
     tx = grid_x0 + span + 6.0
@@ -203,10 +212,13 @@ def peg_size_gauge(widths=(2.0, 2.2, 2.4, 2.6, 2.8)):
 if __name__ == "__main__":
     OUT.mkdir(parents=True, exist_ok=True)
     made = []
-    for p in (4.0, 4.1, 4.2, 4.3, 4.4, 4.5):
-        tris, size = pitch_gauge(p)
-        f = OUT / f"pitch_gauge_{p:.1f}mm.stl"
-        write_stl(f, tris, f"pitch gauge {p:.2f}mm 4x4".encode())
+    # Panel measured at 3/16 in (4.7625 mm). Bracket it, and keep 5.00 as the
+    # metric alternative in case the imperial read is wrong.
+    for p in (4.60, 4.70, 4.7625, 4.83, 4.90, 5.00):
+        lab = "4.76" if abs(p-4.7625) < 1e-6 else f"{p:.2f}"
+        tris, size = pitch_gauge(p, label=lab)
+        f = OUT / f"pitch_gauge_{lab}mm.stl"
+        write_stl(f, tris, f"pitch gauge {p:.4f}mm 3x3".encode())
         made.append((f, len(tris), size))
     tris, size = peg_size_gauge()
     f = OUT / "peg_size_gauge.stl"
