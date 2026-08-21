@@ -220,6 +220,17 @@ if __name__ == "__main__":
         f = OUT / f"pitch_gauge_{lab}mm.stl"
         write_stl(f, tris, f"pitch gauge {p:.4f}mm 3x3".encode())
         made.append((f, len(tris), size))
+    # Post-size fit gauges: pitch now known (3/16 in), so vary post width instead.
+    # Nine snug posts entering at once is a much harder tolerance stack than the one
+    # post of peg_size_gauge, so the usable post size for a real plate is smaller
+    # than the largest single peg that fits.
+    for w in (2.30, 2.40, 2.50, 2.60):
+        lab = f"{w:.1f}"
+        tris, size = pitch_gauge(4.7625, n=3, peg_w=w, label=lab)
+        f = OUT / f"fit_gauge_post{lab}mm.stl"
+        write_stl(f, tris, f"fit gauge 3x3 @4.7625mm post {w:.2f}mm".encode())
+        made.append((f, len(tris), size))
+
     tris, size = peg_size_gauge()
     f = OUT / "peg_size_gauge.stl"
     write_stl(f, tris, b"peg size gauge 2.0-2.8mm")

@@ -57,6 +57,26 @@ bind at opposite corners. If two adjacent plates both seat, the true pitch is be
 The pitch is embossed on the peg side and recessed into the flat side, so you can still read
 it while the plate is sitting in the panel.
 
+## Post-size fit gauges: `fit_gauge_post2.3mm` .. `post2.6mm`
+
+**Pitch is now confirmed at 4.7625 mm (3/16 in).** These four fix the pitch and vary the
+post width instead, and they are the last unknown before real mounting plates.
+
+`peg_size_gauge` answered "what is the largest single peg that enters a hole" (2.6 mm).
+That is not the same question as "what post width can a plate use", because a plate has to
+enter nine holes at once and every printing and pitch tolerance stacks against you. Expect
+the usable width to come out below 2.6 mm.
+
+Print all four, insert each squarely, and pick by feel:
+
+- **too loose** if the plate rattles or can be lifted off without resistance
+- **right** if it needs a firm push, holds itself against the panel, and can be pulled off
+  without tools
+- **too tight** if it will not seat fully, or the panel flexes as you push
+
+Whichever wins becomes the standard post for every mount. Report the winner and, if you can,
+the panel thickness, and the mounting plates can be designed against real numbers.
+
 ## Print settings
 
 ```
