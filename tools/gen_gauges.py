@@ -209,6 +209,103 @@ def peg_size_gauge(widths=(2.0, 2.2, 2.4, 2.6, 2.8)):
     return tabs, (TW, y-GAPY)
 
 
+
+
+
+# ---------------------------------------------------------------- round studs
+
+import math as _math
+
+
+def _tri(v0, v1, v2, outward):
+    """One triangle wound so its normal points along `outward`."""
+    ax, ay, az = (v1[0]-v0[0], v1[1]-v0[1], v1[2]-v0[2])
+    bx, by, bz = (v2[0]-v0[0], v2[1]-v0[1], v2[2]-v0[2])
+    n = (ay*bz-az*by, az*bx-ax*bz, ax*by-ay*bx)
+    if sum(a*b for a, b in zip(n, outward)) < 0:
+        v1, v2 = v2, v1
+        ax, ay, az = (v1[0]-v0[0], v1[1]-v0[1], v1[2]-v0[2])
+        bx, by, bz = (v2[0]-v0[0], v2[1]-v0[1], v2[2]-v0[2])
+        n = (ay*bz-az*by, az*bx-ax*bz, ax*by-ay*bx)
+    L = max((n[0]**2+n[1]**2+n[2]**2) ** 0.5, 1e-12)
+    return [((n[0]/L, n[1]/L, n[2]/L), v0, v1, v2)]
+
+
+def round_frustum(cx, cy, z0, z1, r0, r1, n=28):
+    """Circular frustum as a closed solid. r0 at z0 tapering to r1 at z1.
+
+    Caps are triangle fans from vertex 0; the side wall is quads. Every edge is
+    used exactly twice, so the solid is watertight.
+    """
+    b = [(cx + r0*_math.cos(2*_math.pi*i/n), cy + r0*_math.sin(2*_math.pi*i/n), z0)
+         for i in range(n)]
+    t = [(cx + r1*_math.cos(2*_math.pi*i/n), cy + r1*_math.sin(2*_math.pi*i/n), z1)
+         for i in range(n)]
+    tris = []
+    for i in range(1, n-1):
+        tris += _tri(b[0], b[i], b[i+1], (0, 0, -1))
+        tris += _tri(t[0], t[i], t[i+1], (0, 0, 1))
+    for i in range(n):
+        j = (i+1) % n
+        mid = ((b[i][0]+b[j][0])/2 - cx, (b[i][1]+b[j][1])/2 - cy, 0)
+        tris += _quad(b[i], b[j], t[j], t[i], mid)
+    return tris
+
+
+def stud(cx, cy, z0, head_d, neck_d, neck_len=4.0, head_t=2.0):
+    """A printed 'screw head': neck standing off the plate, then a wider head.
+
+    Hangs a keyhole: the head passes the big hole, the neck slides up the slot,
+    and the head traps the wall behind it. Head top is chamfered so it starts
+    into the keyhole without fighting.
+    """
+    t = []
+    t += round_frustum(cx, cy, z0-0.3, z0+neck_len, neck_d/2, neck_d/2)
+    t += round_frustum(cx, cy, z0+neck_len, z0+neck_len+head_t-0.5, head_d/2, head_d/2)
+    t += round_frustum(cx, cy, z0+neck_len+head_t-0.5, z0+neck_len+head_t,
+                       head_d/2, head_d/2-0.5)
+    return t
+
+
+def stud_gauge(sizes=((5.4, 2.4), (5.8, 2.6), (6.2, 2.8))):
+    """One stud per tab so each can be offered up to a keyhole on its own."""
+    out, y = [], 0.0
+    TW, TH, GAPY = 34.0, 14.0, 3.0
+    for head_d, neck_d in sizes:
+        lbl = f"{head_d:.1f}"
+        lx, ly = 15.0, y + (TH-GH)/2
+        sub = plate_with_recess(TW, TH, [(a, b-y, c, d-y)
+                                         for a, b, c, d in label_cuts(lbl, lx, ly)])
+        out += [(nn, (ax, ay+y, az), (bx, by+y, bz), (cx_, cy_+y, cz))
+                for nn, (ax, ay, az), (bx, by, bz), (cx_, cy_, cz) in sub]
+        out += stud(7.0, y + TH/2, PLATE_T, head_d, neck_d)
+        t, _ = text(lbl, lx, ly, PLATE_T-SINK, PLATE_T+LABEL_Z)
+        out += t
+        y += TH + GAPY
+    return out, (TW, y-GAPY)
+
+
+def strip_hanger_test(spacing=65.40, head_d=5.8, neck_d=2.6):
+    """Two studs at the measured keyhole spacing. Hold it against the strip's
+    back and check both keyholes engage and it hangs square. No panel posts:
+    this tests the keyhole side only.
+
+    The bulge sits mid-slot (measured at 49-52% down), so the keyhole hangs either
+    way up and the studs sit at the bulge centres, i.e. at the keyhole centre
+    spacing of 65.40 mm rather than at a slot end.
+
+    Head 5.8 clears the 6.71 mm bulge by 0.9 mm; neck 2.6 passes any slot wider
+    than about 2.8 mm while the head blocks any slot narrower than about 5.5 mm.
+    That spans the whole plausible range for a 6.71 mm bulge, so the slot width
+    never has to be measured."""
+    MARG, H = 12.0, 16.0
+    W = spacing + 2*MARG
+    tris = _rect(0, 0, 0, W, H, PLATE_T)
+    for cx in (MARG, MARG + spacing):
+        tris += stud(cx, H/2, PLATE_T, head_d, neck_d)
+    return tris, (W, H)
+
+
 if __name__ == "__main__":
     OUT.mkdir(parents=True, exist_ok=True)
     made = []
@@ -230,6 +327,16 @@ if __name__ == "__main__":
         f = OUT / f"fit_gauge_post{lab}mm.stl"
         write_stl(f, tris, f"fit gauge 3x3 @4.7625mm post {w:.2f}mm".encode())
         made.append((f, len(tris), size))
+
+    tris, size = stud_gauge()
+    f = OUT.parent / "strip_mount" / "stud_gauge.stl"
+    f.parent.mkdir(parents=True, exist_ok=True)
+    write_stl(f, tris, b"stud gauge heads 5.4/6.2/7.4mm")
+    made.append((f, len(tris), size))
+    tris, size = strip_hanger_test()
+    f = OUT.parent / "strip_mount" / "strip_hanger_test.stl"
+    write_stl(f, tris, b"strip hanger test 65.27mm spacing")
+    made.append((f, len(tris), size))
 
     tris, size = peg_size_gauge()
     f = OUT / "peg_size_gauge.stl"
