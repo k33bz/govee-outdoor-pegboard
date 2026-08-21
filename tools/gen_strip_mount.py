@@ -13,8 +13,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from gen_gauges import (                                    # noqa: E402
-    GH, PEG_H, PLATE_T, LABEL_Z, SINK, TIP, _rect, frustum, label_cuts, peg,
-    plate_with_recess, round_frustum, stud, text, text_width, write_stl,
+    GH, PEG_H, PLATE_T, LABEL_Z, SINK, TIP, _quad, _rect, frustum, label_cuts,
+    peg, plate_with_recess, round_frustum, stud, text, text_width, write_stl,
 )
 
 PITCH = 4.9643          # small panel, 1200 dpi scan lattice fit, both axes agree to 0.1 um
@@ -71,6 +71,54 @@ def plate_with_holes(W, Hgt, holes, t=PLATE_T):
     return tris
 
 
+PANEL_T  = 2.9          # measured panel thickness; sets shaft length and barb depth
+
+
+def loft_rect(a, b, z0, z1):
+    """Closed prism between rectangle a=(x0,y0,x1,y1) at z0 and b at z1."""
+    A = [(a[0],a[1],z0),(a[2],a[1],z0),(a[2],a[3],z0),(a[0],a[3],z0)]
+    B = [(b[0],b[1],z1),(b[2],b[1],z1),(b[2],b[3],z1),(b[0],b[3],z1)]
+    tris = []
+    tris += _quad(*A, (0,0,-1))
+    tris += _quad(*B, (0,0,1))
+    ca = ((a[0]+a[2])/2, (a[1]+a[3])/2)
+    for k in range(4):
+        m = (k+1) % 4
+        mid = ((A[k][0]+A[m][0])/2 - ca[0], (A[k][1]+A[m][1])/2 - ca[1], 0)
+        tris += _quad(A[k], A[m], B[m], B[k], mid)
+    return tris
+
+
+def barbed_post(cx, cy, z, w=2.5, slot=0.9, barb=3.4, tip=1.3,
+                panel_t=PANEL_T, tip_len=2.0):
+    """A split post with a snap barb, built as two separate legs.
+
+    The slot lets the legs pinch together on the way through; past the panel they
+    spring back and the flat ledge catches the far face. Legs are modelled as two
+    independent closed solids, so no boolean is needed to make the slot.
+
+    Only the OUTER face of each leg flares. Flaring in y as well would engage all
+    four sides but could not compress, since the slot only allows movement in x.
+
+    The ledge is a square step rather than a chamfer: a 45 degree undercut can cam
+    out under load, while a 0.45 mm flat overhang bridges perfectly well.
+    """
+    zt = z + panel_t
+    tris = []
+    for sgn in (-1, 1):
+        inner = cx + sgn*slot/2
+        outer = cx + sgn*w/2
+        obarb = cx + sgn*barb/2
+        otip  = cx + sgn*tip/2
+        lo, hi = min(inner, outer), max(inner, outer)
+        tris += _rect(lo, cy-w/2, z-SINK, hi, cy+w/2, zt)
+        blo, bhi = min(inner, obarb), max(inner, obarb)
+        tlo, thi = min(inner, otip),  max(inner, otip)
+        tris += loft_rect((blo, cy-w/2, bhi, cy+w/2), (tlo, cy-w/2, thi, cy+w/2),
+                          zt, zt+tip_len)
+    return tris
+
+
 PLATE_T2 = 2.4          # plate thickness for the strip mount; sets the spigot length
 SOCKET   = 4.0          # square socket side; the stud spigot is 0.1 under
 
@@ -79,7 +127,7 @@ STUD_ROWS = 28.50       # cross-width keyhole spacing, calipers (21.18 inner, 35
 
 
 def strip_plate(spacing=STUD_SPACING, rows=STUD_ROWS, margin=11.0, margin_y=6.5,
-                post_step=2, keepout=6.5, w_centre=2.60, w_end=2.10):
+                post_step=2, keepout=6.5, w_centre=2.60, w_end=2.10, n_barbs=6):
     """Panel plate: posts on the +Z face, four square sockets for the studs.
 
     FOUR studs, in two rows. A stud sitting in a vertical keyhole slot is a
@@ -115,17 +163,34 @@ def strip_plate(spacing=STUD_SPACING, rows=STUD_ROWS, margin=11.0, margin_y=6.5,
     gy0 = (height - (ny-1)*step)/2
     cx = W/2
     half = max(abs(gx0 - cx), abs(gx0 + (nx-1)*step - cx))
-    widths = []
+    slots = []
     for i in range(nx):
         for j in range(ny):
             px, py = gx0 + i*step, gy0 + j*step
             if any((px-sx)**2 + (py-sy)**2 < keepout**2 for sx, sy in studs):
                 continue
-            w = w_centre - (w_centre - w_end) * (abs(px - cx) / half)
-            tris += frustum(px, py, PLATE_T2-SINK, PLATE_T2+PEG_H-TIP, w/2, w/2)
-            tris += frustum(px, py, PLATE_T2+PEG_H-TIP, PLATE_T2+PEG_H, w/2, w*0.34)
-            widths.append(w)
-    return tris, (W, height), widths, studs
+            slots.append((px, py))
+
+    # barbs spread across the plate: nearest free post to each target
+    targets = [(W*fx, height*fy) for fy in (0.5,) for fx in (0.18, 0.5, 0.82)] +               [(W*fx, height*fy) for fy in (0.12, 0.88) for fx in (0.34, 0.66)]
+    barbed = set()
+    for tx, ty in targets[:n_barbs]:
+        best = min((q for q in slots if q not in barbed),
+                   key=lambda q: (q[0]-tx)**2 + (q[1]-ty)**2)
+        barbed.add(best)
+
+    widths = []
+    for px, py in slots:
+        if (px, py) in barbed:
+            tris += barbed_post(px, py, PLATE_T2)
+            continue
+        w = w_centre - (w_centre - w_end) * (abs(px - cx) / half)
+        # full width through the whole panel, lead-in taper BEYOND the far face,
+        # so the taper never eats into the engaged length
+        tris += frustum(px, py, PLATE_T2-SINK, PLATE_T2+PANEL_T, w/2, w/2)
+        tris += frustum(px, py, PLATE_T2+PANEL_T, PLATE_T2+PANEL_T+0.6, w/2, w*0.34)
+        widths.append(w)
+    return tris, (W, height), widths, studs, sorted(barbed)
 
 
 def strip_stud(head_d=HEAD_D, neck_d=NECK_D, neck_len=4.0, head_t=2.0,
@@ -157,11 +222,12 @@ if __name__ == "__main__":
         write_stl(f, tris, f"pitch span gauge {p:.4f}mm 16 spans post 2.0".encode())
         print(f"{f.name:30s} {len(tris):5d} tris  {size[0]:.1f} x {size[1]:.1f} mm  "
               f"span {16*p:.2f} mm")
-    tris, size, widths, studs = strip_plate()
+    tris, size, widths, studs, barbed = strip_plate()
     f = OUT / "strip_plate.stl"
-    write_stl(f, tris, b"strip plate graded posts pitch 4.9643 + 4 stud sockets")
+    write_stl(f, tris, b"strip plate graded+barbed posts 4.9643, 4 stud sockets, panel 2.9")
     print(f"{f.name:30s} {len(tris):5d} tris  {size[0]:.1f} x {size[1]:.1f} mm  "
-          f"{len(widths)} posts {min(widths):.2f}-{max(widths):.2f}, {len(studs)} sockets")
+          f"{len(widths)} plain {min(widths):.2f}-{max(widths):.2f} + {len(barbed)} barbed, "
+          f"{len(studs)} sockets")
     tris, size = strip_stud()
     f = OUT / "strip_stud.stl"
     write_stl(f, tris, b"strip stud: 3.9mm square spigot + 2.6 neck + 5.8 head")

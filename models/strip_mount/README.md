@@ -157,34 +157,62 @@ is on the panel, the panel itself traps the studs. Glue is optional, not structu
 
 | part | size | mass | print |
 |---|---|---|---|
-| `strip_plate.stl` | 87.2 x 41.5 x 5.9 mm | 11.3 g | 1 off, posts up |
+| `strip_plate.stl` | 87.2 x 41.5 x 7.3 mm | 11.3 g | 1 off, posts up |
 | `strip_stud.stl` | 5.8 mm head, 8.4 mm tall | 0.13 g | **4 off**, spigot down |
 
-**Posts are graded, 2.53 mm at the middle down to 2.10 mm at the ends.** Cumulative pitch
-error is zero at the plate centre and worst at the extremes, so a uniform post is either
-slack everywhere or binds at the tips. Grading puts a firm locating fit where error cannot
-accumulate and generous clearance where it can: the middle posts hold the plate, the end
-posts only carry shear, which they do at any fit.
+**Panel is 2.9 mm thick**, not the 1.5 mm first assumed. That is enough material to grab,
+so six of the posts are barbed snap-fits and the other 22 are plain locators.
 
-Misalignment at a post `n` pitches from centre is `n x delta`, so each post sets its own
-limit:
+### Barbed posts
+
+Split down the middle so the two legs pinch on the way through and spring back past the far
+face. Modelled as two independent closed solids, so the slot needs no boolean.
+
+| | |
+|---|---|
+| post | 2.5 mm square, 0.9 mm slot, 0.8 mm legs |
+| barb | 3.4 mm across the ledge, into a 2.879 mm hole |
+| deflection | 0.26 mm per leg over 4.9 mm of free length |
+| peak strain | **1.3 %**, against PLA yielding around 2 to 3 % |
+| holding | 78 N per post, against 3.7 N of tip-out total |
+
+Strength was never the question; the only real risk was snapping a leg on insertion, and
+1.3 % strain says it will flex rather than break.
+
+Only the **outer** face of each leg flares. Flaring in y as well would engage all four sides
+but could not compress, since the slot only allows movement in x. The ledge is a square step
+rather than a chamfer, because a 45 degree undercut can cam out under load while a 0.45 mm
+flat overhang bridges perfectly well when printed posts-up.
+
+**Check there is clearance behind the panel.** The barbs stand 2.0 mm proud of the far face.
+The panel is an internal mounting panel on standoffs so there should be room, but if it sits
+flat against something the barbs will hold it off.
+
+### Plain posts, graded
+
+Graded 2.53 mm at the middle down to 2.10 mm at the ends. Cumulative pitch error is zero at
+the plate centre and worst at the extremes, so a uniform post is either slack everywhere or
+binds at the tips. Grading puts a firm locating fit where error cannot accumulate and
+generous clearance where it can.
+
+They now run full width through the whole 2.9 mm and taper only **beyond** the far face, so
+the lead-in never eats into the engaged length.
+
+Misalignment at a post `n` pitches from centre is `n x delta`, so each sets its own limit:
 
 | post | width | play | pitches from centre | max delta | margin |
 |---|---|---|---|---|---|
 | end | 2.10 mm | 0.389 mm | 7 | 0.0556 | **2.0x** |
-| | 2.24 mm | 0.319 mm | 5 | 0.0639 | 2.3x |
-| | 2.39 mm | 0.244 mm | 3 | 0.0815 | 3.0x |
 | centre | 2.53 mm | 0.175 mm | 1 | 0.1747 | 6.4x |
 
-The binding case is the end post at 0.0556 against a proven 0.0275: two times the margin. A
-uniform 2.5 mm plate would need 0.0271, 0.99x proven, on the edge and not actually covered.
-That is why the posts are graded rather than simply loosened.
+Against a proven 0.0275, the binding case has two times the margin.
 
 ## Assembly
 
 1. Drop a stud into each of the **four** sockets from the flat face, heads pointing away
    from the posts.
-2. Push the plate onto the panel, posts first. The panel now traps both studs.
+2. Push the plate onto the panel, posts first, pressing firmly until the six barbs
+   snap through. The panel now traps all four studs.
 3. Hang the strip: heads through the keyhole bulges, then let it drop about 5 mm so the
    necks sit in the slots.
 
