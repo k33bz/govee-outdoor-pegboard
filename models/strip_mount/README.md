@@ -98,16 +98,32 @@ amount of work on the panel side will help.
 Reprint from `tools/gen_gauges.py` with a different `head_d`/`neck_d` once the stud gauge
 picks a winner.
 
-## Cross-width pair
+## Cross-width pair, and why FOUR studs
 
 Calipers give 21.18 mm between the insides and 35.83 mm across the outsides, so
 centre-to-centre is **28.50 mm**. Deriving it from the 6.71 mm bulge instead gives 27.89 and
-29.12, mean 28.50, so the spacing is solid.
+29.12, mean 28.50.
 
-**The plate uses two studs, not four.** Two points already fix position and rotation. Four
-would need both the 65.20 and the 28.50 spacings inside the slot play at once on a rigid
-plate, so any single error stops the whole thing seating. At 6.9 N shear and 3.5 N pull-out
-the load does not justify that risk.
+**A two-stud version was built first and failed in use: the strip twisted and levered the
+posts out of the panel.** The reasoning behind it was wrong. A stud sitting in a vertical
+keyhole slot is a **slider, not a point** -- it is free to travel along the slot. Two sliders
+on one horizontal line do not constrain rotation at all, so the strip simply rocks one stud
+up and the other down until it prises the plate off.
+
+The over-constraint argument used to justify two studs was wrong for the same reason, because
+the two axes are nowhere near equally tight:
+
+| axis | spacing | held by | play |
+|---|---|---|---|
+| horizontal | 65.20 mm | slot **width** | a few tenths, tight |
+| vertical | 28.50 mm | slot **length** | about +/-5.0 mm, loose |
+
+So the second row costs almost nothing in tolerance. The 28.50 mm figure can be out by
+millimetres and every stud still engages, each simply sitting at its own height in its own
+slot. Treating all four constraints as equally tight was the mistake.
+
+The second row is also what reacts the tip-out moment, as a couple across the rows rather
+than by levering posts out of the panel.
 
 ## Panel geometry -- SETTLED
 
@@ -141,8 +157,8 @@ is on the panel, the panel itself traps the studs. Glue is optional, not structu
 
 | part | size | mass | print |
 |---|---|---|---|
-| `strip_plate.stl` | 87.2 x 34.0 x 5.9 mm | 9.3 g | 1 off, posts up |
-| `strip_stud.stl` | 5.8 mm head, 8.4 mm tall | 0.13 g | **2 off**, spigot down |
+| `strip_plate.stl` | 87.2 x 41.5 x 5.9 mm | 11.3 g | 1 off, posts up |
+| `strip_stud.stl` | 5.8 mm head, 8.4 mm tall | 0.13 g | **4 off**, spigot down |
 
 **Posts are graded, 2.53 mm at the middle down to 2.10 mm at the ends.** Cumulative pitch
 error is zero at the plate centre and worst at the extremes, so a uniform post is either
@@ -166,7 +182,8 @@ That is why the posts are graded rather than simply loosened.
 
 ## Assembly
 
-1. Drop a stud into each socket from the **flat** face, head pointing away from the posts.
+1. Drop a stud into each of the **four** sockets from the flat face, heads pointing away
+   from the posts.
 2. Push the plate onto the panel, posts first. The panel now traps both studs.
 3. Hang the strip: heads through the keyhole bulges, then let it drop about 5 mm so the
    necks sit in the slots.

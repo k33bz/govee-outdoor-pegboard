@@ -75,24 +75,35 @@ PLATE_T2 = 2.4          # plate thickness for the strip mount; sets the spigot l
 SOCKET   = 4.0          # square socket side; the stud spigot is 0.1 under
 
 
-def strip_plate(spacing=STUD_SPACING, height=34.0, margin=11.0, post_step=2,
-                keepout=6.5, w_centre=2.60, w_end=2.10):
-    """Panel plate: posts on the +Z face, square sockets for the studs.
+STUD_ROWS = 28.50       # cross-width keyhole spacing, calipers (21.18 inner, 35.83 outer)
 
-    Posts enter the panel and studs must face the other way to hold the strip, so
-    they cannot share a face; a part with features on both faces cannot print flat.
-    The studs are therefore a separate part that drops into these sockets from the
-    bed side, and both pieces print flat with no supports.
 
-    Sockets are square rather than round so the stud cannot rotate, and so the hole
-    tiling stays exact for axis-aligned rectangles.
+def strip_plate(spacing=STUD_SPACING, rows=STUD_ROWS, margin=11.0, margin_y=6.5,
+                post_step=2, keepout=6.5, w_centre=2.60, w_end=2.10):
+    """Panel plate: posts on the +Z face, four square sockets for the studs.
+
+    FOUR studs, in two rows. A stud sitting in a vertical keyhole slot is a
+    SLIDER, not a point: it is free to move along the slot. Two sliders on one
+    horizontal line therefore do not constrain rotation at all, and the strip
+    rocks one stud up and the other down until it prises the posts out. An
+    earlier two-stud version failed in exactly that way.
+
+    Adding the second row costs almost nothing in tolerance, because the two axes
+    are not equally tight. The horizontal spacing is held by the slot WIDTH, a few
+    tenths of play. The vertical spacing is held by the slot LENGTH, about +/-5 mm
+    of travel. So the 28.50 mm figure can be out by millimetres and every stud
+    still engages, each simply sitting at its own height in its own slot.
+
+    The second row is also what reacts the tip-out moment, as a couple across the
+    rows rather than by levering the posts out of the panel.
 
     Posts are graded from `w_centre` at the middle to `w_end` at the extremes:
-    cumulative pitch error is zero at the plate centre and worst at the ends, so a
-    uniform post is either slack everywhere or binds at the tips.
+    cumulative pitch error is zero at the plate centre and worst at the ends.
     """
     W = spacing + 2*margin
-    studs = [(margin, height/2), (margin + spacing, height/2)]
+    height = rows + 2*margin_y
+    studs = [(margin + dx, margin_y + dy)
+             for dx in (0.0, spacing) for dy in (0.0, rows)]
     h = SOCKET/2
     holes = [(sx-h, sy-h, sx+h, sy+h) for sx, sy in studs]
     tris = plate_with_holes(W, height, holes, PLATE_T2)
@@ -114,7 +125,7 @@ def strip_plate(spacing=STUD_SPACING, height=34.0, margin=11.0, post_step=2,
             tris += frustum(px, py, PLATE_T2-SINK, PLATE_T2+PEG_H-TIP, w/2, w/2)
             tris += frustum(px, py, PLATE_T2+PEG_H-TIP, PLATE_T2+PEG_H, w/2, w*0.34)
             widths.append(w)
-    return tris, (W, height), widths
+    return tris, (W, height), widths, studs
 
 
 def strip_stud(head_d=HEAD_D, neck_d=NECK_D, neck_len=4.0, head_t=2.0,
@@ -146,12 +157,12 @@ if __name__ == "__main__":
         write_stl(f, tris, f"pitch span gauge {p:.4f}mm 16 spans post 2.0".encode())
         print(f"{f.name:30s} {len(tris):5d} tris  {size[0]:.1f} x {size[1]:.1f} mm  "
               f"span {16*p:.2f} mm")
-    tris, size, widths = strip_plate()
+    tris, size, widths, studs = strip_plate()
     f = OUT / "strip_plate.stl"
-    write_stl(f, tris, b"strip plate graded posts pitch 4.9643 + 2 stud sockets")
+    write_stl(f, tris, b"strip plate graded posts pitch 4.9643 + 4 stud sockets")
     print(f"{f.name:30s} {len(tris):5d} tris  {size[0]:.1f} x {size[1]:.1f} mm  "
-          f"{len(widths)} posts, {min(widths):.2f}-{max(widths):.2f} mm")
+          f"{len(widths)} posts {min(widths):.2f}-{max(widths):.2f}, {len(studs)} sockets")
     tris, size = strip_stud()
     f = OUT / "strip_stud.stl"
     write_stl(f, tris, b"strip stud: 3.9mm square spigot + 2.6 neck + 5.8 head")
-    print(f"{f.name:30s} {len(tris):5d} tris  spigot {size[0]:.1f} mm  (PRINT 2)")
+    print(f"{f.name:30s} {len(tris):5d} tris  spigot {size[0]:.1f} mm  (PRINT 4)")
