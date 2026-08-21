@@ -18,12 +18,29 @@ panel carries two printed "screw heads", the strip hangs over them and drops int
 **Derived.** `inner + 2 x length = 82.33` against a measured outer span of `82.07`, so the
 three keyhole readings agree to 0.26 mm. Centre-to-centre is **65.40 mm**.
 
-**Confirmed photographically.** An annotated photo with grey rectangles marking each hanger's
-bottom edge gives an independent read. Projecting the box tops and the tape's inch numerals
-onto the tape axis, and interpolating between numerals rather than assuming a constant scale,
-puts the spacing at **65.21 mm**, within 0.19 mm of the caliper figure. Worth noting the tape
-in that shot has a 21 per cent scale gradient end to end, which is exactly why the numerals
-are interpolated individually instead of averaged.
+**Three independent reads, spread 0.31 mm.**
+
+| Method | Result |
+|---|---|
+| Calipers, `(inner + outer)/2` | 65.40 mm |
+| Photo, grey box tops projected onto the tape axis | 65.21 mm |
+| Direct tape read, `6 11/16 - 4 1/8 = 41/16 in` | 65.09 mm |
+
+**Adopted: 65.20 mm.** The two direct tape reads agree to 0.12 mm and both sit below the
+caliper figure, which is itself indirect: it comes from combining an inner gap, an outer span
+and a keyhole length that were mutually inconsistent by 0.26 mm.
+
+The tape reads also validate each other in a satisfying way. The photo method's absolute
+readings sit a constant +0.180 and +0.175 in above the eyeball readings, which is the fixed
+offset between a numeral's centroid and its inch tick. Being constant, it cancels entirely in
+the difference, which is why the two methods land 0.12 mm apart despite disagreeing by nearly
+0.18 in on each individual position.
+
+Note the tape in that shot has a 21 per cent scale gradient end to end, which is why the
+numerals are interpolated individually rather than averaged into one px-per-inch figure.
+
+None of this precision actually matters: the slot play absorbs a few tenths. It is recorded
+because three methods agreeing is what makes it safe to stop measuring.
 
 **The keyhole is symmetric, bulge in the middle.** Photographs show a slot that is narrow at
 both ends with the round bulge at 49 to 52 per cent along, not the usual round-one-end shape.

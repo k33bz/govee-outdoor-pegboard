@@ -285,14 +285,16 @@ def stud_gauge(sizes=((5.4, 2.4), (5.8, 2.6), (6.2, 2.8))):
     return out, (TW, y-GAPY)
 
 
-def strip_hanger_test(spacing=65.40, head_d=5.8, neck_d=2.6):
+def strip_hanger_test(spacing=65.20, head_d=5.8, neck_d=2.6):
     """Two studs at the measured keyhole spacing. Hold it against the strip's
     back and check both keyholes engage and it hangs square. No panel posts:
     this tests the keyhole side only.
 
     The bulge sits mid-slot (measured at 49-52% down), so the keyhole hangs either
     way up and the studs sit at the bulge centres, i.e. at the keyhole centre
-    spacing of 65.40 mm rather than at a slot end.
+    spacing of 65.20 mm rather than at a slot end. That figure is the consensus of
+    three independent reads: a caliper derivation at 65.40, a photo measurement at
+    65.21, and a direct tape reading of 41/16 in = 65.09.
 
     Head 5.8 clears the 6.71 mm bulge by 0.9 mm; neck 2.6 passes any slot wider
     than about 2.8 mm while the head blocks any slot narrower than about 5.5 mm.
