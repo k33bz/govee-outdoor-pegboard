@@ -151,14 +151,39 @@ studs must face the other way to hold the strip. A single part with features on 
 cannot print flat, so the studs are separate and drop into square sockets in the plate. Both
 pieces print flat, posts up and spigot down respectively, with no supports.
 
-The sockets are square so the stud cannot rotate. The spigot is 3.9 mm into a 4.0 mm socket
-and is exactly the plate thickness, so it finishes flush with the panel side; once the plate
-is on the panel, the panel itself traps the studs. Glue is optional, not structural.
+The sockets are square so the stud cannot rotate, which also fixes the neck's orientation.
+The spigot is 3.9 mm into a 4.0 mm socket and is exactly the plate thickness, so it finishes
+flush with the panel side; once the plate is on the panel, the panel itself traps the studs.
+Glue is optional, not structural.
+
+### The neck is a rectangle, not a circle
+
+A round 2.6 mm neck was structurally fine, roughly 60x margin even on layer adhesion, but it
+looks and feels thin. It does not have to be round: the keyhole slot is **16.80 mm long and
+only W wide**, so the neck only needs to be narrow *across* the slot and can be far longer
+*along* it.
+
+| neck | area | vs round 2.6 | diagonal | clears the 6.71 bulge |
+|---|---|---|---|---|
+| 2.6 round | 5.31 mm2 | 1.00x | 2.60 | yes |
+| 2.8 round | 6.16 mm2 | 1.16x | 2.80 | yes |
+| **2.8 x 5.5 rect** | **15.40 mm2** | **2.90x** | 6.17 | yes |
+| 2.8 x 6.0 rect | 16.80 mm2 | 3.16x | 6.62 | too tight |
+
+Adopted **2.8 x 5.5** with a **6.2 mm head**. Nearly three times the cross-section for no
+loss of fit, and the 6.17 mm diagonal still passes the bulge going in.
+
+Both figures are the largest actually **proven** on the stud gauge: heads 5.4, 5.8 and 6.2
+all passed the bulge, and necks 2.4, 2.6 and 2.8 all slid the slot. W itself was never
+measured, so anything wider than 2.8 would be guesswork.
+
+The 5.5 mm neck is also wider than the 4.0 mm socket, so its shoulder bears on the plate
+face and the stud cannot push through.
 
 | part | size | mass | print |
 |---|---|---|---|
 | `strip_plate.stl` | 87.2 x 41.5 x 7.3 mm | 11.3 g | 1 off, posts up |
-| `strip_stud.stl` | 5.8 mm head, 8.4 mm tall | 0.13 g | **4 off**, spigot down |
+| `strip_stud.stl` | 6.2 mm head, 2.8 x 5.5 neck, 8.6 mm tall | 0.20 g | **4 off**, spigot down |
 
 **Panel is 2.9 mm thick**, not the 1.5 mm first assumed. That is enough material to grab,
 so six of the posts are barbed snap-fits and the other 22 are plain locators.

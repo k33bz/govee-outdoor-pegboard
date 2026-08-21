@@ -193,21 +193,30 @@ def strip_plate(spacing=STUD_SPACING, rows=STUD_ROWS, margin=11.0, margin_y=6.5,
     return tris, (W, height), widths, studs, sorted(barbed)
 
 
-def strip_stud(head_d=HEAD_D, neck_d=NECK_D, neck_len=4.0, head_t=2.0,
+def strip_stud(head_d=6.2, neck_w=2.8, neck_l=5.5, neck_h=4.0, head_t=2.2,
                spigot=SOCKET-0.1):
-    """One stud. Prints spigot down: square spigot, then a step DOWN to the neck,
-    then the head. Only one overhang, the same 1.6 mm one that printed fine on the
-    stud gauge.
+    """One stud. Prints spigot down, so only one overhang: the head on the neck.
 
-    The spigot is exactly the plate thickness, so it finishes flush with the panel
-    side and the panel itself then traps the stud in place."""
-    tris = frustum(0, 0, 0.0, PLATE_T2, spigot/2, spigot/2)
-    tris += round_frustum(0, 0, PLATE_T2-0.01, PLATE_T2+neck_len, neck_d/2, neck_d/2)
-    tris += round_frustum(0, 0, PLATE_T2+neck_len, PLATE_T2+neck_len+head_t-0.5,
-                          head_d/2, head_d/2)
-    tris += round_frustum(0, 0, PLATE_T2+neck_len+head_t-0.5, PLATE_T2+neck_len+head_t,
+    The neck is a RECTANGLE, not a circle. It only has to be narrow across the
+    slot; along the slot it has 16.80 mm to play with, so making it 2.8 x 5.5
+    instead of 2.6 round is nearly three times the cross-section for no loss of
+    fit. Its 6.17 mm diagonal still clears the 6.71 mm bulge on the way in.
+
+    Head 6.2 and neck width 2.8 are the largest sizes actually proven on the
+    stud gauge. The slot width W was never measured, so going beyond 2.8 would be
+    guesswork.
+
+    The neck's long axis runs along +Y, matching the slot direction when the strip
+    hangs length-horizontal. The square spigot in the square socket is what fixes
+    that orientation.
+    """
+    z0 = PLATE_T2
+    tris = frustum(0, 0, 0.0, z0, spigot/2, spigot/2)
+    tris += _rect(-neck_w/2, -neck_l/2, z0-0.01, neck_w/2, neck_l/2, z0+neck_h)
+    tris += round_frustum(0, 0, z0+neck_h, z0+neck_h+head_t-0.5, head_d/2, head_d/2)
+    tris += round_frustum(0, 0, z0+neck_h+head_t-0.5, z0+neck_h+head_t,
                           head_d/2, head_d/2-0.5)
-    return tris, (spigot, spigot)
+    return tris, (neck_w, neck_l, head_d)
 
 
 if __name__ == "__main__":
@@ -230,5 +239,6 @@ if __name__ == "__main__":
           f"{len(studs)} sockets")
     tris, size = strip_stud()
     f = OUT / "strip_stud.stl"
-    write_stl(f, tris, b"strip stud: 3.9mm square spigot + 2.6 neck + 5.8 head")
-    print(f"{f.name:30s} {len(tris):5d} tris  spigot {size[0]:.1f} mm  (PRINT 4)")
+    write_stl(f, tris, b"strip stud: square spigot + 2.8x5.5 rect neck + 6.2 head")
+    print(f"{f.name:30s} {len(tris):5d} tris  neck {size[0]}x{size[1]} mm, "
+          f"head {size[2]} mm  (PRINT 4)")
