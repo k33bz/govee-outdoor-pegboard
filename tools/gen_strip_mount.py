@@ -17,7 +17,8 @@ from gen_gauges import (                                    # noqa: E402
     stud, text, text_width, write_stl,
 )
 
-PITCH = 4.7625          # panel hole pitch, 3/16 in, print-verified
+PITCH = 4.9643          # small panel, 1200 dpi scan lattice fit, both axes agree to 0.1 um
+HOLE  = 2.879           # measured on the same scan
 STUD_SPACING = 65.20    # consensus of caliper, photo and tape reads
 HEAD_D, NECK_D = 5.8, 2.6
 OUT = Path(__file__).resolve().parent.parent / "models" / "strip_mount"
@@ -51,7 +52,7 @@ def span_gauge(post_w, span_pitches=16, gap_pitches=8, rows=2, pitch=PITCH, labe
     return tris + t, (W, H)
 
 
-def strip_plate(post_w=2.2, spacing=STUD_SPACING, height=34.0, margin=11.0,
+def strip_plate(post_w=2.5, spacing=STUD_SPACING, height=34.0, margin=11.0,
                 post_step=2, keepout=6.5):
     """Panel plate carrying two studs at the keyhole spacing.
 
@@ -88,7 +89,7 @@ if __name__ == "__main__":
     # Post width is now fixed at the loosest 2.0 so only PITCH can bind. None of
     # the three post widths seated at nominal pitch, which bounds the effective
     # pitch outside 4.7625 +/- 0.019; these bracket it.
-    for p in (4.72, 4.74, 4.7625, 4.78, 4.80):
+    for p in (4.92, 4.94, 4.9643, 4.98, 5.00):
         lab = f"{p:.2f}"
         tris, size = span_gauge(2.0, pitch=p, label=lab)
         f = OUT / f"pitchspan_{lab}mm.stl"
@@ -96,6 +97,6 @@ if __name__ == "__main__":
         print(f"{f.name:30s} {len(tris):5d} tris  {size[0]:.1f} x {size[1]:.1f} mm  "
               f"span {16*p:.2f} mm")
     tris, size, n = strip_plate()
-    f = OUT / "strip_plate_post2.2mm.stl"
-    write_stl(f, tris, b"strip plate 2 studs @65.20mm post 2.2mm")
+    f = OUT / "strip_plate_post2.5mm.stl"
+    write_stl(f, tris, b"strip plate 2 studs @65.20mm post 2.5mm pitch 4.9643")
     print(f"{f.name:30s} {len(tris):5d} tris  {size[0]:.1f} x {size[1]:.1f} mm  {n} posts")

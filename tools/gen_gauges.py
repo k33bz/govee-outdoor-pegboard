@@ -1,18 +1,21 @@
 #!/usr/bin/env python3
 """Generate test-fit gauges for the perforated enclosure panel.
 
-Two unknowns have to be separated:
-  * hole pitch, measured at 3/16 in (4.7625 mm) from the second, flatter photo
-  * hole size,  bracketed by test print at 2.6 to 2.8 mm
+Panel geometry, from a 1200 dpi flatbed scan of the small enclosure's panel:
 
-peg_size_gauge  isolates hole size: one peg per tab, five widths, insert one at a time.
-pitch_gauge_*   isolates pitch: a 4x4 grid of deliberately undersized pegs, so only the
-                pitch can bind. Errors accumulate across the grid, which is the point:
-                over three spans a pitch error of d shows up as 3d at the far corner.
+    pitch  4.9643 mm     lattice fit over 21 holes, both axes agree to 0.1 um
+    hole   2.879 x 2.858 mm
+    web    2.086 mm
 
-Geometry is emitted as a union of closed solids. Overlapping closed volumes are resolved
-by the slicer at slice time, and because every primitive is individually watertight the
-whole file stays manifold (every edge used exactly twice).
+The pitch is 5.00 mm nominal less 0.71 per cent, which is ordinary ABS moulding
+shrinkage, so the tool was cut metric. Earlier photograph-derived figures of 5.4,
+4.2 and 3/16 in were all wrong; a flatbed scan has no perspective, no lens
+distortion and no tilt, which is why it settled in one shot what three rounds of
+photographs could not.
+
+Geometry is emitted as a union of closed solids. Overlapping closed volumes are
+resolved by the slicer, and because every primitive is individually watertight the
+whole file stays manifold.
 
 Everything prints flat on the bed, pegs up, no supports.
 """
@@ -313,21 +316,13 @@ if __name__ == "__main__":
     made = []
     # Panel measured at 3/16 in (4.7625 mm). Bracket it, and keep 5.00 as the
     # metric alternative in case the imperial read is wrong.
-    for p in (4.60, 4.70, 4.7625, 4.83, 4.90, 5.00):
-        lab = "4.76" if abs(p-4.7625) < 1e-6 else f"{p:.2f}"
+    # Panel pitch corrected to 4.9643 by a 1200 dpi scan; the earlier 3/16 in
+    # figure came from photographs and was wrong by 0.20 mm.
+    for p in (4.90, 4.93, 4.9643, 5.00):
+        lab = f"{p:.2f}"
         tris, size = pitch_gauge(p, label=lab)
         f = OUT / f"pitch_gauge_{lab}mm.stl"
         write_stl(f, tris, f"pitch gauge {p:.4f}mm 3x3".encode())
-        made.append((f, len(tris), size))
-    # Post-size fit gauges: pitch now known (3/16 in), so vary post width instead.
-    # Nine snug posts entering at once is a much harder tolerance stack than the one
-    # post of peg_size_gauge, so the usable post size for a real plate is smaller
-    # than the largest single peg that fits.
-    for w in (2.30, 2.40, 2.50, 2.60):
-        lab = f"{w:.1f}"
-        tris, size = pitch_gauge(4.7625, n=3, peg_w=w, label=lab)
-        f = OUT / f"fit_gauge_post{lab}mm.stl"
-        write_stl(f, tris, f"fit gauge 3x3 @4.7625mm post {w:.2f}mm".encode())
         made.append((f, len(tris), size))
 
     tris, size = stud_gauge()
