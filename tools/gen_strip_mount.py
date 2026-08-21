@@ -13,8 +13,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from gen_gauges import (                                    # noqa: E402
-    GH, PLATE_T, LABEL_Z, SINK, _rect, label_cuts, peg, plate_with_recess,
-    stud, text, text_width, write_stl,
+    GH, PEG_H, PLATE_T, LABEL_Z, SINK, TIP, _rect, frustum, label_cuts, peg,
+    plate_with_recess, round_frustum, stud, text, text_width, write_stl,
 )
 
 PITCH = 4.9643          # small panel, 1200 dpi scan lattice fit, both axes agree to 0.1 um
@@ -52,26 +52,51 @@ def span_gauge(post_w, span_pitches=16, gap_pitches=8, rows=2, pitch=PITCH, labe
     return tris + t, (W, H)
 
 
+def plate_with_holes(W, Hgt, holes, t=PLATE_T):
+    """Plate 0..t with square through-holes. Tiled by subdividing on every hole
+    edge and emitting a box per cell not inside a hole: exact for axis-aligned
+    rectangles and keeps everything a union of closed boxes."""
+    xs = sorted({0.0, W} | {h[0] for h in holes} | {h[2] for h in holes})
+    ys = sorted({0.0, Hgt} | {h[1] for h in holes} | {h[3] for h in holes})
+    tris = []
+    for i in range(len(xs)-1):
+        for j in range(len(ys)-1):
+            x0, x1, y0, y1 = xs[i], xs[i+1], ys[j], ys[j+1]
+            if x1-x0 < 1e-9 or y1-y0 < 1e-9:
+                continue
+            mx, my = (x0+x1)/2, (y0+y1)/2
+            if any(h[0] < mx < h[2] and h[1] < my < h[3] for h in holes):
+                continue
+            tris += _rect(x0, y0, 0.0, x1, y1, t)
+    return tris
+
+
+PLATE_T2 = 2.4          # plate thickness for the strip mount; sets the spigot length
+SOCKET   = 4.0          # square socket side; the stud spigot is 0.1 under
+
+
 def strip_plate(spacing=STUD_SPACING, height=34.0, margin=11.0, post_step=2,
                 keepout=6.5, w_centre=2.60, w_end=2.10):
-    """Panel plate carrying two studs at the keyhole spacing, with GRADED posts.
+    """Panel plate: posts on the +Z face, square sockets for the studs.
 
-    Two studs, not four: two points already fix position and rotation, while four
-    would need both spacings inside the slot play at once on a rigid plate, so any
-    single error stops the whole thing seating.
+    Posts enter the panel and studs must face the other way to hold the strip, so
+    they cannot share a face; a part with features on both faces cannot print flat.
+    The studs are therefore a separate part that drops into these sockets from the
+    bed side, and both pieces print flat with no supports.
 
-    Posts are graded from `w_centre` at the middle to `w_end` at the extremes.
-    Cumulative pitch error is zero at the centre and worst at the ends, so a
-    uniform post is either too loose everywhere or binds at the tips. Grading puts
-    a firm locating fit where error cannot accumulate and generous clearance where
-    it can: the middle posts hold the plate, the end posts only carry shear.
+    Sockets are square rather than round so the stud cannot rotate, and so the hole
+    tiling stays exact for axis-aligned rectangles.
 
-    A 16 span gauge with 2.0 mm posts seated, which proves the pitch to 0.0275 mm
-    per pitch. A uniform 2.5 mm plate would need 0.0118, better than was proven;
-    the graded end posts at 2.10 need 0.0243, inside it.
+    Posts are graded from `w_centre` at the middle to `w_end` at the extremes:
+    cumulative pitch error is zero at the plate centre and worst at the ends, so a
+    uniform post is either slack everywhere or binds at the tips.
     """
     W = spacing + 2*margin
     studs = [(margin, height/2), (margin + spacing, height/2)]
+    h = SOCKET/2
+    holes = [(sx-h, sy-h, sx+h, sy+h) for sx, sy in studs]
+    tris = plate_with_holes(W, height, holes, PLATE_T2)
+
     step = post_step * PITCH
     nx = int((W - 2*4.0) // step) + 1
     ny = int((height - 2*4.0) // step) + 1
@@ -79,8 +104,6 @@ def strip_plate(spacing=STUD_SPACING, height=34.0, margin=11.0, post_step=2,
     gy0 = (height - (ny-1)*step)/2
     cx = W/2
     half = max(abs(gx0 - cx), abs(gx0 + (nx-1)*step - cx))
-
-    tris = _rect(0, 0, 0, W, height, PLATE_T)
     widths = []
     for i in range(nx):
         for j in range(ny):
@@ -88,11 +111,27 @@ def strip_plate(spacing=STUD_SPACING, height=34.0, margin=11.0, post_step=2,
             if any((px-sx)**2 + (py-sy)**2 < keepout**2 for sx, sy in studs):
                 continue
             w = w_centre - (w_centre - w_end) * (abs(px - cx) / half)
-            tris += peg(px, py, w)
+            tris += frustum(px, py, PLATE_T2-SINK, PLATE_T2+PEG_H-TIP, w/2, w/2)
+            tris += frustum(px, py, PLATE_T2+PEG_H-TIP, PLATE_T2+PEG_H, w/2, w*0.34)
             widths.append(w)
-    for sx, sy in studs:
-        tris += stud(sx, sy, PLATE_T, HEAD_D, NECK_D)
     return tris, (W, height), widths
+
+
+def strip_stud(head_d=HEAD_D, neck_d=NECK_D, neck_len=4.0, head_t=2.0,
+               spigot=SOCKET-0.1):
+    """One stud. Prints spigot down: square spigot, then a step DOWN to the neck,
+    then the head. Only one overhang, the same 1.6 mm one that printed fine on the
+    stud gauge.
+
+    The spigot is exactly the plate thickness, so it finishes flush with the panel
+    side and the panel itself then traps the stud in place."""
+    tris = frustum(0, 0, 0.0, PLATE_T2, spigot/2, spigot/2)
+    tris += round_frustum(0, 0, PLATE_T2-0.01, PLATE_T2+neck_len, neck_d/2, neck_d/2)
+    tris += round_frustum(0, 0, PLATE_T2+neck_len, PLATE_T2+neck_len+head_t-0.5,
+                          head_d/2, head_d/2)
+    tris += round_frustum(0, 0, PLATE_T2+neck_len+head_t-0.5, PLATE_T2+neck_len+head_t,
+                          head_d/2, head_d/2-0.5)
+    return tris, (spigot, spigot)
 
 
 if __name__ == "__main__":
@@ -109,6 +148,10 @@ if __name__ == "__main__":
               f"span {16*p:.2f} mm")
     tris, size, widths = strip_plate()
     f = OUT / "strip_plate.stl"
-    write_stl(f, tris, b"strip plate 2 studs @65.20mm graded posts pitch 4.9643")
+    write_stl(f, tris, b"strip plate graded posts pitch 4.9643 + 2 stud sockets")
     print(f"{f.name:30s} {len(tris):5d} tris  {size[0]:.1f} x {size[1]:.1f} mm  "
           f"{len(widths)} posts, {min(widths):.2f}-{max(widths):.2f} mm")
+    tris, size = strip_stud()
+    f = OUT / "strip_stud.stl"
+    write_stl(f, tris, b"strip stud: 3.9mm square spigot + 2.6 neck + 5.8 head")
+    print(f"{f.name:30s} {len(tris):5d} tris  spigot {size[0]:.1f} mm  (PRINT 2)")

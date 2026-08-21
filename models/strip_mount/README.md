@@ -128,15 +128,27 @@ Earlier photograph-derived figures of 5.4, 4.2 and 4.7625 were all wrong. Photog
 failing because perspective, lens distortion and tilt all bias scale; a scan has none of
 them and settled it in one shot.
 
-## `strip_plate.stl` -- the actual part
+## `strip_plate.stl` + `strip_stud.stl` -- the actual part
 
-87.2 x 34.0 mm, 22 posts, two 5.8 mm studs at 65.20 mm, about 6.6 g.
+**Two pieces, because the features have to be on opposite faces.** Posts enter the panel;
+studs must face the other way to hold the strip. A single part with features on both faces
+cannot print flat, so the studs are separate and drop into square sockets in the plate. Both
+pieces print flat, posts up and spigot down respectively, with no supports.
+
+The sockets are square so the stud cannot rotate. The spigot is 3.9 mm into a 4.0 mm socket
+and is exactly the plate thickness, so it finishes flush with the panel side; once the plate
+is on the panel, the panel itself traps the studs. Glue is optional, not structural.
+
+| part | size | mass | print |
+|---|---|---|---|
+| `strip_plate.stl` | 87.2 x 34.0 x 5.9 mm | 9.3 g | 1 off, posts up |
+| `strip_stud.stl` | 5.8 mm head, 8.4 mm tall | 0.13 g | **2 off**, spigot down |
 
 **Posts are graded, 2.53 mm at the middle down to 2.10 mm at the ends.** Cumulative pitch
 error is zero at the plate centre and worst at the extremes, so a uniform post is either
 slack everywhere or binds at the tips. Grading puts a firm locating fit where error cannot
 accumulate and generous clearance where it can: the middle posts hold the plate, the end
-posts only carry shear, which they do regardless of fit.
+posts only carry shear, which they do at any fit.
 
 Misalignment at a post `n` pitches from centre is `n x delta`, so each post sets its own
 limit:
@@ -148,9 +160,16 @@ limit:
 | | 2.39 mm | 0.244 mm | 3 | 0.0815 | 3.0x |
 | centre | 2.53 mm | 0.175 mm | 1 | 0.1747 | 6.4x |
 
-The binding case is the end post at 0.0556, against a proven 0.0275: **two times the margin**.
-A uniform 2.5 mm plate would need 0.0271, which is 0.99x proven, i.e. right on the edge and
-not actually covered. That is why the posts are graded rather than simply loosened.
+The binding case is the end post at 0.0556 against a proven 0.0275: two times the margin. A
+uniform 2.5 mm plate would need 0.0271, 0.99x proven, on the edge and not actually covered.
+That is why the posts are graded rather than simply loosened.
+
+## Assembly
+
+1. Drop a stud into each socket from the **flat** face, head pointing away from the posts.
+2. Push the plate onto the panel, posts first. The panel now traps both studs.
+3. Hang the strip: heads through the keyhole bulges, then let it drop about 5 mm so the
+   necks sit in the slots.
 
 `tools/gen_strip_mount.py` takes `w_centre` and `w_end`; raise them together for a firmer
 fit once this one is confirmed.
