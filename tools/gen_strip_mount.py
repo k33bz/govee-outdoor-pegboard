@@ -52,36 +52,47 @@ def span_gauge(post_w, span_pitches=16, gap_pitches=8, rows=2, pitch=PITCH, labe
     return tris + t, (W, H)
 
 
-def strip_plate(post_w=2.5, spacing=STUD_SPACING, height=34.0, margin=11.0,
-                post_step=2, keepout=6.5):
-    """Panel plate carrying two studs at the keyhole spacing.
+def strip_plate(spacing=STUD_SPACING, height=34.0, margin=11.0, post_step=2,
+                keepout=6.5, w_centre=2.60, w_end=2.10):
+    """Panel plate carrying two studs at the keyhole spacing, with GRADED posts.
 
     Two studs, not four: two points already fix position and rotation, while four
-    would require both spacings to land inside the slot play at the same time on a
-    rigid plate, so any single error stops the whole thing seating.
+    would need both spacings inside the slot play at once on a rigid plate, so any
+    single error stops the whole thing seating.
+
+    Posts are graded from `w_centre` at the middle to `w_end` at the extremes.
+    Cumulative pitch error is zero at the centre and worst at the ends, so a
+    uniform post is either too loose everywhere or binds at the tips. Grading puts
+    a firm locating fit where error cannot accumulate and generous clearance where
+    it can: the middle posts hold the plate, the end posts only carry shear.
+
+    A 16 span gauge with 2.0 mm posts seated, which proves the pitch to 0.0275 mm
+    per pitch. A uniform 2.5 mm plate would need 0.0118, better than was proven;
+    the graded end posts at 2.10 need 0.0243, inside it.
     """
     W = spacing + 2*margin
     studs = [(margin, height/2), (margin + spacing, height/2)]
-
-    # post grid, centred, skipping anything that would foul a stud
     step = post_step * PITCH
     nx = int((W - 2*4.0) // step) + 1
     ny = int((height - 2*4.0) // step) + 1
     gx0 = (W - (nx-1)*step)/2
     gy0 = (height - (ny-1)*step)/2
+    cx = W/2
+    half = max(abs(gx0 - cx), abs(gx0 + (nx-1)*step - cx))
 
     tris = _rect(0, 0, 0, W, height, PLATE_T)
-    n = 0
+    widths = []
     for i in range(nx):
         for j in range(ny):
             px, py = gx0 + i*step, gy0 + j*step
             if any((px-sx)**2 + (py-sy)**2 < keepout**2 for sx, sy in studs):
                 continue
-            tris += peg(px, py, post_w)
-            n += 1
+            w = w_centre - (w_centre - w_end) * (abs(px - cx) / half)
+            tris += peg(px, py, w)
+            widths.append(w)
     for sx, sy in studs:
         tris += stud(sx, sy, PLATE_T, HEAD_D, NECK_D)
-    return tris, (W, height), n
+    return tris, (W, height), widths
 
 
 if __name__ == "__main__":
@@ -96,7 +107,8 @@ if __name__ == "__main__":
         write_stl(f, tris, f"pitch span gauge {p:.4f}mm 16 spans post 2.0".encode())
         print(f"{f.name:30s} {len(tris):5d} tris  {size[0]:.1f} x {size[1]:.1f} mm  "
               f"span {16*p:.2f} mm")
-    tris, size, n = strip_plate()
-    f = OUT / "strip_plate_post2.5mm.stl"
-    write_stl(f, tris, b"strip plate 2 studs @65.20mm post 2.5mm pitch 4.9643")
-    print(f"{f.name:30s} {len(tris):5d} tris  {size[0]:.1f} x {size[1]:.1f} mm  {n} posts")
+    tris, size, widths = strip_plate()
+    f = OUT / "strip_plate.stl"
+    write_stl(f, tris, b"strip plate 2 studs @65.20mm graded posts pitch 4.9643")
+    print(f"{f.name:30s} {len(tris):5d} tris  {size[0]:.1f} x {size[1]:.1f} mm  "
+          f"{len(widths)} posts, {min(widths):.2f}-{max(widths):.2f} mm")

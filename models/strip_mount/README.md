@@ -109,43 +109,48 @@ would need both the 65.20 and the 28.50 spacings inside the slot play at once on
 plate, so any single error stops the whole thing seating. At 6.9 N shear and 3.5 N pull-out
 the load does not justify that risk.
 
-## `pitchspan_4.72mm` .. `4.80mm` -- the current blocker
+## Panel geometry -- SETTLED
 
-The three post-width span gauges (2.0, 2.2, 2.4 mm) **all failed to seat**. That is a real
-result, not a bad print, and it bounds the answer.
+A 1200 dpi flatbed scan of the small enclosure's panel, lattice-fit over 21 hole centres
+with both axes agreeing to 0.1 um:
 
-Even the loosest, 2.0 mm posts with 0.299 mm of play per side, could not span 16 pitches, so
-the effective pitch is off by more than `0.299 / 16 = 0.019 mm` per pitch, putting it outside
-4.7438 to 4.7812.
+    pitch  4.9643 mm     hole  2.879 x 2.858 mm     web  2.086 mm
 
-**This does not contradict the 3x3 gauge seating at 4.76.** A 3x3 spans two pitches with
-2.1 mm posts, so it only proves the pitch to within 0.124 mm per pitch, seven times looser
-than a 16-span run needs. An error of 0.02 to 0.12 mm is invisible over two pitches and fatal
-over sixteen. Both observations are consistent.
+That is a 5.00 mm tool less 0.71 per cent, ordinary ABS moulding shrinkage, so the grid was
+cut metric. Calipers confirm independently: 47.5 mm across ten holes outer wall to outer
+wall is `9 x pitch + 1 hole`, giving 4.958 to 4.967 depending on which hole figure is used.
 
-These five fix the post at the loosest 2.0 mm so **only pitch can bind**, and sweep it:
+`pitchspan_4.96mm`, sixteen spans with deliberately loose 2.0 mm posts, **seats**. That is
+the pitch confirmed on a printed part rather than only in a measurement, and it bounds the
+combined panel-and-printer error at **0.0275 mm per pitch**.
 
-| file | pitch | span over 16 | drift vs nominal |
-|---|---|---|---|
-| `pitchspan_4.72mm` | 4.7200 | 75.52 mm | -0.68 mm |
-| `pitchspan_4.74mm` | 4.7400 | 75.84 mm | -0.36 mm |
-| `pitchspan_4.76mm` | 4.7625 | 76.20 mm | 0 |
-| `pitchspan_4.78mm` | 4.7800 | 76.48 mm | +0.28 mm |
-| `pitchspan_4.80mm` | 4.8000 | 76.80 mm | +0.60 mm |
+Earlier photograph-derived figures of 5.4, 4.2 and 4.7625 were all wrong. Photographs kept
+failing because perspective, lens distortion and tilt all bias scale; a scan has none of
+them and settled it in one shot.
 
-About 3.3 g each. The one that seats gives the **effective pitch**: panel pitch divided by
-printer scale. That combined figure is what a printed part actually needs, so the error does
-not have to be attributed to panel or printer to be usable. Every later mount inherits it.
+## `strip_plate.stl` -- the actual part
 
-**Check for warp before concluding.** These bars are 108 x 15 x 1.6 mm, a shape prone to
-curling at the ends, and a bowed bar tilts its end posts so they cannot enter regardless of
-pitch. Use a brim and confirm the bar sits flat before judging. If none seats but the middle
-cluster always does, suspect warp rather than pitch.
+87.2 x 34.0 mm, 22 posts, two 5.8 mm studs at 65.20 mm, about 6.6 g.
 
-## `strip_plate_post2.2mm.stl`
+**Posts are graded, 2.53 mm at the middle down to 2.10 mm at the ends.** Cumulative pitch
+error is zero at the plate centre and worst at the extremes, so a uniform post is either
+slack everywhere or binds at the tips. Grading puts a firm locating fit where error cannot
+accumulate and generous clearance where it can: the middle posts hold the plate, the end
+posts only carry shear, which they do regardless of fit.
 
-87.2 x 34.0 mm, 23 posts on 9.525 mm centres, two 5.8 mm studs at 65.20 mm, about 6.6 g.
-**Do not print it yet**: its post grid uses the nominal 4.7625 pitch, which the span gauges
-have just shown is wrong over a long run. Regenerate once `pitchspan` picks a winner.
+Misalignment at a post `n` pitches from centre is `n x delta`, so each post sets its own
+limit:
 
-`tools/gen_strip_mount.py` takes the pitch as a parameter throughout.
+| post | width | play | pitches from centre | max delta | margin |
+|---|---|---|---|---|---|
+| end | 2.10 mm | 0.389 mm | 7 | 0.0556 | **2.0x** |
+| | 2.24 mm | 0.319 mm | 5 | 0.0639 | 2.3x |
+| | 2.39 mm | 0.244 mm | 3 | 0.0815 | 3.0x |
+| centre | 2.53 mm | 0.175 mm | 1 | 0.1747 | 6.4x |
+
+The binding case is the end post at 0.0556, against a proven 0.0275: **two times the margin**.
+A uniform 2.5 mm plate would need 0.0271, which is 0.99x proven, i.e. right on the edge and
+not actually covered. That is why the posts are graded rather than simply loosened.
+
+`tools/gen_strip_mount.py` takes `w_centre` and `w_end`; raise them together for a firmer
+fit once this one is confirmed.
