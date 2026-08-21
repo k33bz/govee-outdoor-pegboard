@@ -98,8 +98,54 @@ amount of work on the panel side will help.
 Reprint from `tools/gen_gauges.py` with a different `head_d`/`neck_d` once the stud gauge
 picks a winner.
 
-## Next
+## Cross-width pair
 
-With the winning stud size, the winning post width from `../test_gauges/fit_gauge_post*`,
-and the slot width, the real plate is a single part: post grid on 4.7625 mm centres, two
-studs at 65.27 mm, sized so the strip clears the panel.
+Calipers give 21.18 mm between the insides and 35.83 mm across the outsides, so
+centre-to-centre is **28.50 mm**. Deriving it from the 6.71 mm bulge instead gives 27.89 and
+29.12, mean 28.50, so the spacing is solid.
+
+**The plate uses two studs, not four.** Two points already fix position and rotation. Four
+would need both the 65.20 and the 28.50 spacings inside the slot play at once on a rigid
+plate, so any single error stops the whole thing seating. At 6.9 N shear and 3.5 N pull-out
+the load does not justify that risk.
+
+## `pitchspan_4.72mm` .. `4.80mm` -- the current blocker
+
+The three post-width span gauges (2.0, 2.2, 2.4 mm) **all failed to seat**. That is a real
+result, not a bad print, and it bounds the answer.
+
+Even the loosest, 2.0 mm posts with 0.299 mm of play per side, could not span 16 pitches, so
+the effective pitch is off by more than `0.299 / 16 = 0.019 mm` per pitch, putting it outside
+4.7438 to 4.7812.
+
+**This does not contradict the 3x3 gauge seating at 4.76.** A 3x3 spans two pitches with
+2.1 mm posts, so it only proves the pitch to within 0.124 mm per pitch, seven times looser
+than a 16-span run needs. An error of 0.02 to 0.12 mm is invisible over two pitches and fatal
+over sixteen. Both observations are consistent.
+
+These five fix the post at the loosest 2.0 mm so **only pitch can bind**, and sweep it:
+
+| file | pitch | span over 16 | drift vs nominal |
+|---|---|---|---|
+| `pitchspan_4.72mm` | 4.7200 | 75.52 mm | -0.68 mm |
+| `pitchspan_4.74mm` | 4.7400 | 75.84 mm | -0.36 mm |
+| `pitchspan_4.76mm` | 4.7625 | 76.20 mm | 0 |
+| `pitchspan_4.78mm` | 4.7800 | 76.48 mm | +0.28 mm |
+| `pitchspan_4.80mm` | 4.8000 | 76.80 mm | +0.60 mm |
+
+About 3.3 g each. The one that seats gives the **effective pitch**: panel pitch divided by
+printer scale. That combined figure is what a printed part actually needs, so the error does
+not have to be attributed to panel or printer to be usable. Every later mount inherits it.
+
+**Check for warp before concluding.** These bars are 108 x 15 x 1.6 mm, a shape prone to
+curling at the ends, and a bowed bar tilts its end posts so they cannot enter regardless of
+pitch. Use a brim and confirm the bar sits flat before judging. If none seats but the middle
+cluster always does, suspect warp rather than pitch.
+
+## `strip_plate_post2.2mm.stl`
+
+87.2 x 34.0 mm, 23 posts on 9.525 mm centres, two 5.8 mm studs at 65.20 mm, about 6.6 g.
+**Do not print it yet**: its post grid uses the nominal 4.7625 pitch, which the span gauges
+have just shown is wrong over a long run. Regenerate once `pitchspan` picks a winner.
+
+`tools/gen_strip_mount.py` takes the pitch as a parameter throughout.
