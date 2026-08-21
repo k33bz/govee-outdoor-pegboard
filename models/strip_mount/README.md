@@ -18,6 +18,13 @@ panel carries two printed "screw heads", the strip hangs over them and drops int
 **Derived.** `inner + 2 x length = 82.33` against a measured outer span of `82.07`, so the
 three keyhole readings agree to 0.26 mm. Centre-to-centre is **65.40 mm**.
 
+**Confirmed photographically.** An annotated photo with grey rectangles marking each hanger's
+bottom edge gives an independent read. Projecting the box tops and the tape's inch numerals
+onto the tape axis, and interpolating between numerals rather than assuming a constant scale,
+puts the spacing at **65.21 mm**, within 0.19 mm of the caliper figure. Worth noting the tape
+in that shot has a 21 per cent scale gradient end to end, which is exactly why the numerals
+are interpolated individually instead of averaged.
+
 **The keyhole is symmetric, bulge in the middle.** Photographs show a slot that is narrow at
 both ends with the round bulge at 49 to 52 per cent along, not the usual round-one-end shape.
 It therefore hangs either way up, and the stud rests at the bulge centre, so stud spacing is
