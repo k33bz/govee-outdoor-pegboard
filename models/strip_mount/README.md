@@ -153,8 +153,16 @@ pieces print flat, posts up and spigot down respectively, with no supports.
 
 The sockets are square so the stud cannot rotate, which also fixes the neck's orientation.
 The spigot is 3.9 mm into a 4.0 mm socket and is exactly the plate thickness, so it finishes
-flush with the panel side; once the plate is on the panel, the panel itself traps the studs.
-Glue is optional, not structural.
+flush with the panel side.
+
+**Glue the studs in. It is structural, not optional.** An earlier version of this file claimed
+the panel traps them; it does not. The panel sits *behind* the plate, while pull-out drags the
+stud *forward* out of its socket, away from the panel. The panel is not in that load path at
+all, and the neck shoulder only stops the stud going backwards. Retention without glue is
+friction in a 0.05 mm clearance, which is nothing.
+
+One drop of cyanoacrylate on the spigot bonds about 37 mm2 of wall, roughly 374 N, against
+the 1.86 N each upper stud actually sees.
 
 ### Print the stud HEAD DOWN
 
@@ -294,6 +302,40 @@ extremes. Posts run full width to 0.5 mm past nominal panel thickness before tap
 mechanically: the strip's weight acts about 15 mm out, so the upper stud row is pulled away
 from the panel while the lower is pushed into it. Raise `margin_y` rather than `extra_bottom`
 if it ever needs more grip.
+
+## Stud loads, and why the socket shape does not matter
+
+At an assumed 700 g strip:
+
+| load | per stud | notes |
+|---|---|---|
+| shear (weight) | 1.72 N | all four studs share it |
+| pull-out (tip-out) | 1.86 N | **upper two only**; the lower two are pushed in |
+
+**Shear is nowhere near a limit.** The spigot bears on the socket wall: 3.90 mm x 2.4 mm =
+9.36 mm2, giving 0.18 MPa, 218x under ABS yield. Even a 1.2 mm plate would be 109x under. So
+thickening the plate does nothing for shear.
+
+**Rotating the socket 45 degrees makes shear worse and does nothing for pull-out.** Square,
+flat down, bears across the full 3.90 mm of wall; point down bears on a corner with contact
+length near zero. Pull-out is purely axial, so orientation cannot affect it.
+
+**Shape is not the constraint either.** Shear wants a flat perpendicular to the load, which a
+square already has, and anti-rotation works with any non-round section. Neither is close to a
+limit.
+
+**Plate thickness does matter, but only for whether a snap-fit is possible.** A split spigot
+snapping into a counterbore needs leg length to bend:
+
+| plate | free length | strain at a 0.15 mm ledge | verdict |
+|---|---|---|---|
+| 2.4 mm | 1.80 mm | 5.56 % | snaps off |
+| 3.0 mm | 2.40 mm | 3.12 % | snaps off |
+| 4.0 mm | 3.40 mm | 1.56 % | marginal |
+| 5.0 mm | 4.40 mm | 0.93 % | comfortable |
+
+The plate stays at 2.4 mm and the studs are glued, which is 200x the bond strength needed and
+costs no thickness. Revisit only if a no-glue assembly is wanted later.
 
 ## Socket orientation: tested, no benefit
 
