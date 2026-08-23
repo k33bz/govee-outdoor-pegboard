@@ -50,6 +50,43 @@ Same panel numbers throughout: 4.9643 mm pitch, 2.929 mm holes with 0.698 mm cor
 them, and the same christmas-tree barb with three ledges at 2.9 / 3.5 / 4.1 mm, which grips
 any panel from 2.3 to 4.1 mm.
 
+## Two options, and they are not the same job
+
+| | staple | cradle |
+|---|---|---|
+| cord | **captive** | **lays in, lifts out** |
+| to reroute | pull the staple out of the panel | just lift the cord |
+| mass | 0.42 - 0.81 g | 1.4 - 1.7 g |
+| supports | none | none |
+| glue | none | none |
+
+**Use a staple where the run is settled** and you want it to stay put: the strip's
+power cord, anything crossing a busy area.
+
+**Use a cradle where you expect to change things**: a bundle you add to, a lead you
+unplug, anything you would rather not dismantle a mount to move.
+
+## `cord_cradle_06 / 10 / 13mm.stl`
+
+Open-top cradle on a back pad with four legs. Prints cradle-up.
+
+Both of your ideas are in this one. **The flat bottom** is what makes it printable
+cradle-up: a U resting on its curve touches the bed on a line, whereas flattened it has
+real first-layer area. **The arms curl 22 degrees past the horizontal** so they rise above
+the cord's centreline and it cannot roll out, while staying well inside 45 degrees of
+inward lean so every layer is still self-supporting.
+
+**On supports:** the answer is yes it works, but it does not need them. Opening up and
+legs into the panel are *perpendicular*, not opposite, so one piece is possible. That
+leaves the legs as horizontal cantilevers, which normally print badly. Rotating the
+octagonal leg so a **vertex points down** makes it self-support at 45 degrees, and because
+an octagon's fit is set by its inscribed circle, rotating it does not change the hole fit
+at all. Printing legs-up instead would hang the cradle under the plate and cost about
+56 per cent of the part mass in support.
+
+Four legs in two rows, not two: the cord's weight acts on a lever arm out from the panel,
+and a single row would let the cradle rock. Two rows react it as a couple.
+
 ## Print settings
 
 ```
