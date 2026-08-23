@@ -167,27 +167,49 @@ def cord_cradle(cord_d, width=6.0, wall=2.0, span_pitches=3, rows_pitch=1,
     zc = ro                             # cradle centre height above the bed
     # cradle profile: sweep the closed part, clamping the bottom flat
     tris = []
-    # sweep past the horizontal by `curl` so the arms rise above the cord's
-    # centreline and it cannot roll out. Staying under 45 degrees of inward lean
-    # keeps every layer self-supporting, so this costs nothing to print.
+    # ONE closed solid, not a stack of abutting wedges.
+    #
+    # The first version emitted each angular segment as its own prism. They were
+    # contiguous and individually watertight, so every check passed, but the file
+    # was full of coincident internal faces and viewers rendered it as a fan of
+    # strips instead of one body. Build the shell directly instead: inner surface,
+    # outer surface, two side walls and two end caps.
+    #
+    # Arms sweep `curl` past the horizontal so they rise above the cord centreline
+    # and it cannot roll out, staying inside 45 degrees so layers self-support.
     sweep = 180 + 2*curl
-    n = max(12, int(sweep/seg))
+    n = max(16, int(sweep/seg))
+    hw = width/2
+    IN, OUTP = [], []
+    for k in range(n+1):
+        t = math.radians(180 - curl + sweep*k/n)
+        xi, zi = ri*math.cos(t), max(ri*math.sin(t), -ri*0.72)
+        xo, zo = ro*math.cos(t), max(ro*math.sin(t), -ro)
+        IN.append((xi, zi + zc))
+        OUTP.append((xo, zo + zc))
+    tris = []
     for k in range(n):
-        t0 = math.radians(180 - curl + sweep*k/n)
-        t1 = math.radians(180 - curl + sweep*(k+1)/n)
-        def pt(r, t):
-            x, z = r*math.cos(t), r*math.sin(t)
-            return (x, max(z, -zc + (0.0 if abs(x) > flat else 0.0)))
-        def clamp(r, t, floor):
-            x, z = r*math.cos(t), r*math.sin(t)
-            return (x, max(z, floor))
-        qi0 = clamp(ri, t0, -ri*0.72); qi1 = clamp(ri, t1, -ri*0.72)
-        qo0 = clamp(ro, t0, -ro);      qo1 = clamp(ro, t1, -ro)
-        quad = [(qi0[0], qi0[1]+zc), (qo0[0], qo0[1]+zc),
-                (qo1[0], qo1[1]+zc), (qi1[0], qi1[1]+zc)]
-        if abs(quad[0][0]-quad[3][0]) < 1e-9 and abs(quad[1][0]-quad[2][0]) < 1e-9:
-            continue
-        tris += prism4_y(quad, -width/2, width/2)
+        a, b = IN[k], IN[k+1]
+        c, d = OUTP[k], OUTP[k+1]
+        # inner surface, normal points toward the cord (outward from the shell)
+        tris += _quad((a[0], -hw, a[1]), (b[0], -hw, b[1]),
+                      (b[0], hw, b[1]), (a[0], hw, a[1]),
+                      (-(a[0]+b[0])/2, 0, -((a[1]+b[1])/2 - zc)))
+        # outer surface
+        tris += _quad((c[0], -hw, c[1]), (d[0], -hw, d[1]),
+                      (d[0], hw, d[1]), (c[0], hw, c[1]),
+                      ((c[0]+d[0])/2, 0, (c[1]+d[1])/2 - zc))
+        # the two side walls, which are the U-shaped faces
+        tris += _quad((a[0], -hw, a[1]), (c[0], -hw, c[1]),
+                      (d[0], -hw, d[1]), (b[0], -hw, b[1]), (0, -1, 0))
+        tris += _quad((a[0], hw, a[1]), (c[0], hw, c[1]),
+                      (d[0], hw, d[1]), (b[0], hw, b[1]), (0, 1, 0))
+    for k, out in ((0, -1), (n, 1)):
+        a, c = IN[k], OUTP[k]
+        nx = math.cos(math.radians(180 - curl + sweep*k/n) + math.pi/2)*out
+        nz = math.sin(math.radians(180 - curl + sweep*k/n) + math.pi/2)*out
+        tris += _quad((a[0], -hw, a[1]), (c[0], -hw, c[1]),
+                      (c[0], hw, c[1]), (a[0], hw, a[1]), (nx, 0, nz))
     # back pad, standing in the XZ plane behind the cradle
     span = span_pitches*PITCH
     rows = rows_pitch*PITCH
