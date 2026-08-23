@@ -106,6 +106,35 @@ small sizes break first: a 6 mm C-clip with a 1.5 mm wall runs past PLA yield. N
 three parts here flexes at all; the cord goes in from the open side or the mount goes on
 over it.
 
+## One row or two: it depends on where the load sits
+
+This is the rule that decides every remaining mount, so it is worth stating plainly.
+
+**Load sitting ON the panel needs one row. Load standing OFF the panel needs two.**
+
+The arch and the staple set the cord down on the panel, so its weight goes into the panel
+rather than into the mount. The mount only loads up when something lifts or drags the cord,
+and that acts within the 6 mm width, at most 3 mm from the line joining the legs. The cradle
+holds the cord about 10 mm out in front, so the cord's own weight applies **3.3 times the
+overturning moment, permanently**. That is what the second row is for.
+
+The other half of it is that a post here is a **built-in connection, not a pin**: it bears
+against its hole over the full 2.9 mm of panel, so a moment is reacted as a couple inside the
+hole depth. A single post already resists rotation, which is why two of them do not make a
+hinge the way the strip's studs in slots did.
+
+Numbers for the arch on a single row:
+
+| | |
+|---|---|
+| pull-out, both posts | 71 N, about 7 kg, barb ledges in shear |
+| rocking, 20 N lifted 3 mm off centre | 6.4 MPa bearing, 6.2x margin on ABS |
+| rocking, 50 N lifted 3 mm off centre | 16.1 MPa bearing, 2.5x margin on ABS |
+
+A second row would roughly halve those and buy nothing. **The Govee controller and the LED
+power brick are a different case**: both are boxes that stand off the panel, so their weight
+is cantilevered like the cradle's and both will want two rows.
+
 ## Two legs is enough on the staple and the arch
 
 The strip mount needed four studs because a stud sitting in a keyhole **slot** is a slider,
