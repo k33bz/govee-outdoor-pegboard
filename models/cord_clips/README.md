@@ -8,13 +8,13 @@ answer different questions about how much you want the cord pinned down.
 | holds the cord | on two sides, air at the flanks | **on three sides, wrapped** | in an open U |
 | cord is | captive | captive | **lays in, lifts out** |
 | to reroute | pull the mount out of the panel | pull the mount out of the panel | just lift the cord |
-| mass | 0.42 - 0.81 g | **0.23 - 0.40 g** | 1.4 - 1.7 g |
+| mass | 0.42 - 0.81 g | **0.33 - 0.58 g** | 1.4 - 1.7 g |
 | legs | 2 | 2 | 4 |
 | supports | none | none | none |
 | glue | none | none | none |
 
-**Use the arch as the default.** It is the lightest of the three and the only one that
-actually wraps the cord.
+**Use the arch as the default.** It is the only one that actually wraps the cord, and it
+is lighter than the staple.
 
 **Use a staple** where the cord is not round, or where a bundle has to pass under a
 constant-height bridge.
@@ -28,12 +28,12 @@ unplug, anything you would rather not dismantle a mount to move.
 
 This is the sketch: an arch hugging the cord, legs splaying down through the panel.
 
-| file | legs | size | mass |
-|---|---|---|---|
-| `cord_arch_06mm` | 2 pitches | 12.5 x 6.0 x 13.3 | 0.23 g |
-| `cord_arch_08mm` | 3 pitches | 17.5 x 6.0 x 15.2 | 0.29 g |
-| `cord_arch_10mm` | 3 pitches | 17.5 x 6.0 x 17.1 | 0.33 g |
-| `cord_arch_13mm` | 4 pitches | 22.5 x 6.0 x 19.9 | 0.40 g |
+| file | legs | size | mass | bed contact |
+|---|---|---|---|---|
+| `cord_arch_06mm` | 2 pitches | 12.5 x 6.0 x 13.3 | 0.33 g | 25.9 mm2 |
+| `cord_arch_08mm` | 3 pitches | 17.5 x 6.0 x 15.2 | 0.41 g | 30.9 mm2 |
+| `cord_arch_10mm` | 3 pitches | 17.5 x 6.0 x 17.1 | 0.47 g | 36.0 mm2 |
+| `cord_arch_13mm` | 4 pitches | 22.5 x 6.0 x 19.9 | 0.58 g | 43.6 mm2 |
 
 The inner surface is a circle of `cord_d/2 + 0.3` centred `cord_d/2` above the panel, so
 it sits on the cord rather than clamping it.
@@ -127,9 +127,31 @@ Nozzle        0.4 mm
 Layer         0.2 mm
 Perimeters    3
 Infill        20 %
-Supports      none
+Supports      NONE - set this explicitly, see below
+Brim          5 mm on the arch; not needed on the staple or cradle
 Orientation   as-is
 ```
+
+### Supports: off, and set it by hand
+
+Every part here is self-supporting, and that is measured rather than assumed. Slicing the
+arch at 0.2 mm and comparing each layer's footprint against the one below it, the largest
+unsupported step anywhere in the part is **0.50 mm**, roughly one extrusion width. None of
+the 85 layers exceeds that.
+
+**Do not leave it to the slicer's automatic detection.** That test is on the angle of a
+face, not on how far the face actually steps out. The christmas-tree barb ledges and the two
+end caps are true 90 degree faces, so an automatic pass flags them however small they are,
+and the support it generates lands around the barbs, exactly where they have to stay clean
+to latch. Turn supports off.
+
+### Brim on the arch
+
+The arch stands 17.1 mm tall on 36 mm2 of bed contact, because printing crown-down means
+only the crown flat touches. That is enough area to stick, but it is a narrow base under a
+part whose legs splay out to 17.5 mm at the top, so the nozzle has leverage on it. A 5 mm
+brim removes the question. The staple lands its whole 20.5 x 6.0 mm bridge on the bed and
+does not need one.
 
 Regenerate any size with `tools/gen_cord_clips.py`. `cord_arch()`, `cord_staple()` and
 `cord_cradle()` each take the cord diameter, and optionally the leg spacing in pitches and

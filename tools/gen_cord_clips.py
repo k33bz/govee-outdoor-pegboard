@@ -286,10 +286,13 @@ def cord_arch(cord_d, width=6.0, wall=1.8, t0=15.0, clear=0.3, seg=7.0,
                       (d[0], -hw, d[1]), (b[0], -hw, b[1]), (0, -1, 0))
         tris += _quad((a[0], hw, a[1]), (c[0], hw, c[1]),
                       (d[0], hw, d[1]), (b[0], hw, b[1]), (0, 1, 0))
-    for k, out in ((0, -1), (len(inner)-1, 1)):
+    for k in (0, len(inner)-1):
         a, c = inner[k], outer[k]
+        # Both ends sit flat on the panel line, so this cap is HORIZONTAL and the
+        # outward hint has to be vertical. Passing (+-1, 0, 0) here left the +x cap
+        # wound inward.
         tris += _quad((a[0], -hw, a[1]), (c[0], -hw, c[1]),
-                      (c[0], hw, c[1]), (a[0], hw, a[1]), (out, 0, 0))
+                      (c[0], hw, c[1]), (a[0], hw, a[1]), (0, 0, -1))
     # Flip so the FLAT on the crown lands on the bed: z -> zflat - z.
     #
     # Two traps here, both of which the checker caught. Flipping about `crown`

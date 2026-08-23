@@ -31,6 +31,17 @@ def _quad(v0, v1, v2, v3, outward):
     ax, ay, az = (v1[0]-v0[0], v1[1]-v0[1], v1[2]-v0[2])
     bx, by, bz = (v2[0]-v0[0], v2[1]-v0[1], v2[2]-v0[2])
     n = (ay*bz-az*by, az*bx-ax*bz, ax*by-ay*bx)
+    # The hint must actually pick a side. If it is perpendicular to the face the
+    # dot is 0, the flip below never fires, and the winding is left to whatever
+    # order the caller happened to pass -- silently, because the normal we store
+    # is computed from that same winding and so always agrees with itself.
+    # That shipped one inverted end cap on cord_arch. Refuse the ambiguity.
+    L0 = max((n[0]**2 + n[1]**2 + n[2]**2) ** 0.5, 1e-12)
+    Lo = max(sum(c*c for c in outward) ** 0.5, 1e-12)
+    if abs(sum(a*b for a, b in zip(n, outward))) < 0.1 * L0 * Lo:
+        raise ValueError(
+            "_quad: outward hint %r is perpendicular to the face it should "
+            "orient (face normal %r) -- it cannot choose a winding" % (outward, n))
     if sum(a*b for a, b in zip(n, outward)) < 0:
         v0, v1, v2, v3 = v3, v2, v1, v0
         ax, ay, az = (v1[0]-v0[0], v1[1]-v0[1], v1[2]-v0[2])
@@ -225,6 +236,17 @@ def _tri(v0, v1, v2, outward):
     ax, ay, az = (v1[0]-v0[0], v1[1]-v0[1], v1[2]-v0[2])
     bx, by, bz = (v2[0]-v0[0], v2[1]-v0[1], v2[2]-v0[2])
     n = (ay*bz-az*by, az*bx-ax*bz, ax*by-ay*bx)
+    # The hint must actually pick a side. If it is perpendicular to the face the
+    # dot is 0, the flip below never fires, and the winding is left to whatever
+    # order the caller happened to pass -- silently, because the normal we store
+    # is computed from that same winding and so always agrees with itself.
+    # That shipped one inverted end cap on cord_arch. Refuse the ambiguity.
+    L0 = max((n[0]**2 + n[1]**2 + n[2]**2) ** 0.5, 1e-12)
+    Lo = max(sum(c*c for c in outward) ** 0.5, 1e-12)
+    if abs(sum(a*b for a, b in zip(n, outward))) < 0.1 * L0 * Lo:
+        raise ValueError(
+            "_quad: outward hint %r is perpendicular to the face it should "
+            "orient (face normal %r) -- it cannot choose a winding" % (outward, n))
     if sum(a*b for a, b in zip(n, outward)) < 0:
         v1, v2 = v2, v1
         ax, ay, az = (v1[0]-v0[0], v1[1]-v0[1], v1[2]-v0[2])
