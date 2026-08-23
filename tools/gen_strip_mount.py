@@ -143,51 +143,58 @@ STUD_ROWS = 28.50       # cross-width keyhole spacing, calipers (21.18 inner, 35
 
 
 def strip_plate(spacing=STUD_SPACING, rows=STUD_ROWS, margin=11.0, margin_y=6.5,
-                post_step=2, keepout=6.5, w_centre=2.60, w_end=2.10, n_barbs=6):
+                extra_bottom=1, keepout=3.6, w_centre=2.60, w_end=2.10, n_barbs=6):
     """Panel plate: posts on the +Z face, four square sockets for the studs.
 
-    FOUR studs, in two rows. A stud sitting in a vertical keyhole slot is a
-    SLIDER, not a point: it is free to move along the slot. Two sliders on one
-    horizontal line therefore do not constrain rotation at all, and the strip
-    rocks one stud up and the other down until it prises the posts out. An
-    earlier two-stud version failed in exactly that way.
+    FOUR studs, in two rows. A stud in a vertical keyhole slot is a SLIDER, not a
+    point, so two sliders on one line constrain no rotation at all and the strip
+    rocks one stud up and the other down. An earlier two-stud version failed that
+    way. The second row costs almost nothing in tolerance because the horizontal
+    spacing is held by the slot WIDTH, a few tenths, while the vertical is held by
+    the slot LENGTH, about +/-5 mm.
 
-    Adding the second row costs almost nothing in tolerance, because the two axes
-    are not equally tight. The horizontal spacing is held by the slot WIDTH, a few
-    tenths of play. The vertical spacing is held by the slot LENGTH, about +/-5 mm
-    of travel. So the 28.50 mm figure can be out by millimetres and every stud
-    still engages, each simply sitting at its own height in its own slot.
+    Posts sit on a CHECKERBOARD of the panel lattice, every hole with i+j even.
+    Nearest neighbours are pitch*sqrt(2) = 7.02 mm apart instead of 9.93, which is
+    twice the post density for the same span, so grading still covers the
+    cumulative error unchanged.
 
-    The second row is also what reacts the tip-out moment, as a couple across the
-    rows rather than by levering the posts out of the panel.
+    `keepout` is the centre distance from a stud socket at which a post clears it.
+    A 4.0 mm socket and a 2.5 mm post clear at 3.25 mm; the earlier 6.5 mm was
+    twice what was needed and deleted whole rings of posts for nothing.
 
-    Posts are graded from `w_centre` at the middle to `w_end` at the extremes:
-    cumulative pitch error is zero at the plate centre and worst at the ends.
+    `extra_bottom` adds rows below the lower stud row. Note that mechanically the
+    TOP matters more: the strip's weight acts about 15 mm out from the panel, so
+    the upper stud row is pulled away from the panel and the lower is pushed into
+    it. Rows above the top stud row resist that tension directly.
+
+    Posts are graded from `w_centre` at the middle to `w_end` at the extremes,
+    since cumulative pitch error is zero at the plate centre and worst at the ends.
     """
     W = spacing + 2*margin
-    height = rows + 2*margin_y
-    studs = [(margin + dx, margin_y + dy)
+    height = rows + 2*margin_y + extra_bottom*PITCH
+    studs = [(margin + dx, margin_y + extra_bottom*PITCH + dy)
              for dx in (0.0, spacing) for dy in (0.0, rows)]
     h = SOCKET/2
     holes = [(sx-h, sy-h, sx+h, sy+h) for sx, sy in studs]
     tris = plate_with_holes(W, height, holes, PLATE_T2)
 
-    step = post_step * PITCH
-    nx = int((W - 2*4.0) // step) + 1
-    ny = int((height - 2*4.0) // step) + 1
-    gx0 = (W - (nx-1)*step)/2
-    gy0 = (height - (ny-1)*step)/2
+    nx = int((W - 2*4.0) // PITCH) + 1
+    ny = int((height - 2*4.0) // PITCH) + 1
+    gx0 = (W - (nx-1)*PITCH)/2
+    gy0 = (height - (ny-1)*PITCH)/2
     cx = W/2
-    half = max(abs(gx0 - cx), abs(gx0 + (nx-1)*step - cx))
+    half = max(abs(gx0 - cx), abs(gx0 + (nx-1)*PITCH - cx))
+
     slots = []
     for i in range(nx):
         for j in range(ny):
-            px, py = gx0 + i*step, gy0 + j*step
-            if any((px-sx)**2 + (py-sy)**2 < keepout**2 for sx, sy in studs):
+            if (i + j) % 2:
+                continue                      # checkerboard
+            px, py = gx0 + i*PITCH, gy0 + j*PITCH
+            if any(abs(px-sx) < keepout and abs(py-sy) < keepout for sx, sy in studs):
                 continue
             slots.append((px, py))
 
-    # barbs spread across the plate: nearest free post to each target
     targets = [(W*fx, height*fy) for fy in (0.5,) for fx in (0.18, 0.5, 0.82)] +               [(W*fx, height*fy) for fy in (0.12, 0.88) for fx in (0.34, 0.66)]
     barbed = set()
     for tx, ty in targets[:n_barbs]:
@@ -201,10 +208,6 @@ def strip_plate(spacing=STUD_SPACING, rows=STUD_ROWS, margin=11.0, margin_y=6.5,
             tris += barbed_post(px, py, PLATE_T2)
             continue
         w = w_centre - (w_centre - w_end) * (abs(px - cx) / half)
-        # full width through the whole panel, lead-in taper BEYOND the far face,
-        # so the taper never eats into the engaged length
-        # 0.5 mm past nominal panel thickness before the taper starts, so the
-        # full width still fills the hole if the panel runs thick
         tris += frustum(px, py, PLATE_T2-SINK, PLATE_T2+PANEL_T+0.5, w/2, w/2)
         tris += frustum(px, py, PLATE_T2+PANEL_T+0.5, PLATE_T2+PANEL_T+1.1, w/2, w*0.34)
         widths.append(w)

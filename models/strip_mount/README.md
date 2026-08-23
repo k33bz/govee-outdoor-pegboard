@@ -182,7 +182,7 @@ face and the stud cannot push through.
 
 | part | size | mass | print |
 |---|---|---|---|
-| `strip_plate.stl` | 87.2 x 41.5 x 8.1 mm | 11.4 g | 1 off, posts up |
+| `strip_plate.stl` | 87.2 x 46.5 x 8.1 mm | 13.6 g | 1 off, posts up |
 | `strip_stud.stl` | 6.2 mm head, 2.8 x 5.5 neck, 8.6 mm tall | 0.20 g | **4 off**, spigot down |
 
 **Panel is 2.9 mm thick**, not the 1.5 mm first assumed. That is enough material to grab,
@@ -228,25 +228,38 @@ bridges perfectly well printed posts-up.
 
 Barbs stand 2.8 mm proud of the far face, against 6 to 7 mm of clearance behind the panel.
 
-### Plain posts, graded
+### Plain posts: checkerboard lattice, graded width
 
-Graded 2.53 mm at the middle down to 2.10 mm at the ends. Cumulative pitch error is zero at
-the plate centre and worst at the extremes, so a uniform post is either slack everywhere or
-binds at the tips. Grading puts a firm locating fit where error cannot accumulate and
-generous clearance where it can.
+Posts sit on a **checkerboard** of the panel lattice, every hole where `i+j` is even.
+Nearest neighbours are `pitch x sqrt(2) = 7.02 mm` apart instead of 9.93, which is twice the
+density for the same span, so the grading still covers cumulative error unchanged.
 
-They run full width to 0.5 mm **past** the nominal panel thickness before the taper starts,
-so the hole stays filled even if the panel runs thick, and the lead-in never eats into the
-engaged length.
+| pattern | nearest spacing | holes used | posts here |
+|---|---|---|---|
+| square, every 2nd hole (old) | 9.93 mm | 1 in 4 | 28 |
+| **checkerboard** | **7.02 mm** | 1 in 2 | **62** |
+| every hole | 4.96 mm | 1 in 1 | 112 |
 
-Misalignment at a post `n` pitches from centre is `n x delta`, so each sets its own limit:
+The keepout around each socket was also wrong: a 4.0 mm socket and a 2.5 mm post clear once
+their centres are 3.25 mm apart, and I had used 6.5, twice what was needed, deleting whole
+rings of posts for nothing. Closest post to a socket is now 4.32 mm.
 
-| post | width | play | pitches from centre | max delta | margin |
-|---|---|---|---|---|---|
-| end | 2.10 mm | 0.389 mm | 7 | 0.0556 | **2.0x** |
-| centre | 2.53 mm | 0.175 mm | 1 | 0.1747 | 6.4x |
+Rotating the posts 45 degrees into diamonds was considered and rejected: a diamond inscribed
+in a 2.879 mm square hole has 2.04 mm sides, only 66 per cent of a 2.5 mm square post's
+section. Nor can any lattice rotation put the sockets in the gaps, because the sockets sit
+where the **strip's** keyholes dictate, 13.13 and 5.74 pitches apart, which are not lattice
+positions at all.
 
-Against a proven 0.0275, the binding case has two times the margin.
+Widths are graded 2.53 mm at the middle down to 2.10 mm at the ends, since cumulative pitch
+error is zero at the plate centre and worst at the extremes. They run full width to 0.5 mm
+past nominal panel thickness before tapering, so the hole stays filled if the panel runs
+thick and the lead-in never eats into the engaged length.
+
+`extra_bottom` adds rows below the lower stud row, currently one. Note the **top** matters
+more mechanically: the strip's weight acts about 15 mm out from the panel, so the upper stud
+row is pulled away from the panel while the lower is pushed into it. Rows above the top stud
+row resist that tension directly, so raise `margin_y` rather than `extra_bottom` if the plate
+ever needs more grip.
 
 ## Assembly
 
