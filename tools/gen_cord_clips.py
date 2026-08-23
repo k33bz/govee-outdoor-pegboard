@@ -225,6 +225,92 @@ def cord_cradle(cord_d, width=6.0, wall=2.0, span_pitches=3, rows_pitch=1,
     return tris, (pw, ph, ro*2, width)
 
 
+
+def cord_arch(cord_d, width=6.0, wall=1.8, t0=15.0, clear=0.3, seg=7.0,
+              flat_frac=0.90):
+    """Arch that hugs the cord, with legs splaying down through the panel.
+
+    This is the shape from the sketch, and it is better than the flat-bridge
+    staple: the arch wraps the cord on three sides so it cannot shift sideways,
+    where a flat bridge leaves air either side.
+
+    The arch cannot simply come straight down. An inner radius of r+0.3 centred
+    r above the panel meets the panel only about 3.5 mm apart for a 10 mm cord,
+    well under one 4.96 mm pitch, so there is nowhere to put legs. Instead the
+    arch stops `t0` above the horizontal and straight struts splay out to legs on
+    real holes. Measured lean from vertical is 7.1 to 27.1 degrees across the four
+    sizes (the outer face is always the steeper of the two), comfortably inside the
+    45 degree self-supporting limit, so no supports anywhere.
+
+    Modelled crown-down, the print orientation. The crown carries a flat so it has
+    real first-layer area instead of balancing on a curve.
+
+    Built as ONE closed shell: inner surface, outer surface, two side walls, two
+    end caps. Emitting it as abutting wedges passes every watertightness check but
+    buries hundreds of internal faces in the file, which is what made the first
+    cradle render as a fan of strips.
+    """
+    r = cord_d/2
+    ri = r + clear
+    ro = ri + wall
+    span_p = 2
+    while span_p*PITCH < cord_d + 3.0:
+        span_p += 1
+    lx = span_p*PITCH/2
+    hl = POST_W/2
+
+    crown = r + ro
+    zflat = r + ro*flat_frac                      # clamp the outer crown flat
+
+    n = max(10, int((180 - 2*t0)/seg))
+    inner, outer = [], []
+    inner.append((-lx + hl, 0.0)); outer.append((-lx - hl, 0.0))
+    for k in range(n+1):
+        t = math.radians(180 - t0 - (180 - 2*t0)*k/n)
+        inner.append((ri*math.cos(t), r + ri*math.sin(t)))
+        outer.append((ro*math.cos(t), min(r + ro*math.sin(t), zflat)))
+    inner.append((lx - hl, 0.0)); outer.append((lx + hl, 0.0))
+
+    hw = width/2
+    tris = []
+    for k in range(len(inner)-1):
+        a, b = inner[k], inner[k+1]
+        c, d = outer[k], outer[k+1]
+        mid = ((a[0]+b[0])/2, (a[1]+b[1])/2 - r)
+        tris += _quad((a[0], -hw, a[1]), (b[0], -hw, b[1]),
+                      (b[0], hw, b[1]), (a[0], hw, a[1]), (-mid[0], 0, -mid[1]))
+        mo = ((c[0]+d[0])/2, (c[1]+d[1])/2 - r)
+        tris += _quad((c[0], -hw, c[1]), (d[0], -hw, d[1]),
+                      (d[0], hw, d[1]), (c[0], hw, c[1]), (mo[0], 0, mo[1]))
+        tris += _quad((a[0], -hw, a[1]), (c[0], -hw, c[1]),
+                      (d[0], -hw, d[1]), (b[0], -hw, b[1]), (0, -1, 0))
+        tris += _quad((a[0], hw, a[1]), (c[0], hw, c[1]),
+                      (d[0], hw, d[1]), (b[0], hw, b[1]), (0, 1, 0))
+    for k, out in ((0, -1), (len(inner)-1, 1)):
+        a, c = inner[k], outer[k]
+        tris += _quad((a[0], -hw, a[1]), (c[0], -hw, c[1]),
+                      (c[0], hw, c[1]), (a[0], hw, a[1]), (out, 0, 0))
+    # Flip so the FLAT on the crown lands on the bed: z -> zflat - z.
+    #
+    # Two traps here, both of which the checker caught. Flipping about `crown`
+    # rather than `zflat` leaves the part hovering by ro*(1-flat_frac), because
+    # the crown is clamped away. And a mirror reverses winding: the cross product
+    # becomes -M.n, so simply negating the stored normal points it INWARD. Swap
+    # two vertices to restore the winding and mirror only the z component.
+    out = []
+    for n0, a, b, c in tris:
+        out.append(((n0[0], n0[1], -n0[2]),
+                    (a[0], a[1], zflat-a[2]),
+                    (c[0], c[1], zflat-c[2]),
+                    (b[0], b[1], zflat-b[2])))
+    # Legs are added AFTER the flip, in the print frame, because barbed_post
+    # always builds upward. Adding them before the flip mirrored them too and
+    # they ran out of the panel instead of into it.
+    for cx in (-lx, lx):
+        out += barbed_post(cx, 0.0, zflat)
+    return out, (2*lx + POST_W, width, zflat + PANEL_T + 3*0.6 + 1.0, span_p)
+
+
 if __name__ == "__main__":
     OUT.mkdir(parents=True, exist_ok=True)
     print(f"{'file':26s} {'legs':>5} {'gap':>7} {'standoff':>9} {'size mm':>18}")
@@ -234,6 +320,12 @@ if __name__ == "__main__":
         write_stl(f, tris, f"cord staple {d}mm: {sp} pitch legs, {so:.1f} standoff".encode())
         print(f"{f.name:26s} {sp:5d} {gap:7.2f} {so:9.2f} "
               f"{L:6.1f} x {W:.1f} x {H:.1f}")
+    print()
+    for d in (6, 8, 10, 13):
+        tris, (L, W, H, sp) = cord_arch(d)
+        f = OUT / f"cord_arch_{d:02d}mm.stl"
+        write_stl(f, tris, f"cord arch {d}mm: hugs the cord, {sp} pitch legs".encode())
+        print(f"{f.name:26s} {sp} pitch legs, {L:.1f} x {W:.1f} x {H:.1f} mm")
     print()
     for d in (6, 10, 13):
         tris, (pw, ph, od, w) = cord_cradle(d)
