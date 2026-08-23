@@ -205,7 +205,7 @@ face and the stud cannot push through.
 
 | part | size | mass | print |
 |---|---|---|---|
-| `strip_plate.stl` | 87.2 x 46.5 x 8.1 mm | 13.6 g | 1 off, posts up |
+| `strip_plate.stl` | 87.2 x 51.4 x 9.6 mm | 15.6 g | 1 off, posts up |
 | `strip_stud.stl` | 6.2 mm head, 2.8 x 5.5 neck, 8.6 mm tall | 0.20 g | **4 off**, spigot down |
 
 **Panel is 2.9 mm thick**, not the 1.5 mm first assumed. That is enough material to grab,
@@ -320,10 +320,24 @@ because they sit where the **strip's** keyholes dictate, 13.13 and 5.74 pitches 
 Widths are graded because cumulative pitch error is zero at the plate centre and worst at the
 extremes. Posts run full width to 0.5 mm past nominal panel thickness before tapering.
 
-`extra_bottom` adds rows below the lower stud row, currently one. The **top** matters more
-mechanically: the strip's weight acts about 15 mm out, so the upper stud row is pulled away
-from the panel while the lower is pushed into it. Raise `margin_y` rather than `extra_bottom`
-if it ever needs more grip.
+### Plates are always symmetric about what they mount to
+
+`extra_rows` adds that many post rows beyond the stud rows at **both** ends. It used to be
+`extra_bottom` and added them only below, which left 11.46 mm of plate under the lower stud
+row against 6.50 mm over the upper one, a full pitch out.
+
+That is worth more than tidiness. An off-centre plate puts unequal material either side of
+the load path, so one edge peels before the other, and it leaves a part that only fits one
+way up with nothing on it to say which way that is.
+
+The extra row was also on the wrong side. The **top** matters more mechanically: the strip's
+weight acts about 15 mm out from the panel, so the upper stud row is pulled **away** from the
+panel while the lower is pushed into it. Rows above the top stud row resist that tension
+directly, and those were exactly the rows that were missing. Making it symmetric added eight
+posts and all eight landed on the loaded side.
+
+`check_symmetric()` now asserts it at generation time, so a plate cannot drift off centre
+again without the build failing.
 
 ## Stud loads, and why the socket shape does not matter
 

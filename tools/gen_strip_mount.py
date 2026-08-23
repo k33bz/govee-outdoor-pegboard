@@ -143,8 +143,28 @@ SOCKET   = 4.0          # square socket side; the stud spigot is 0.1 under
 STUD_ROWS = 28.50       # cross-width keyhole spacing, calipers (21.18 inner, 35.83 outer)
 
 
+def check_symmetric(name, W, height, feats):
+    """Assert a plate's mounting features are centred on its outline.
+
+    Plates are always symmetric about whatever they mount to. It is not cosmetic:
+    an off-centre plate puts unequal material either side of the load path, so one
+    edge peels before the other, and it makes the part fit only one way up with
+    nothing on it to say which. strip_plate drifted one full pitch out when
+    `extra_bottom` added rows below the studs and nothing above, which is what this
+    catches.
+    """
+    xs = [f[0] for f in feats]; ys = [f[1] for f in feats]
+    ex = (min(xs) + max(xs))/2 - W/2
+    ey = (min(ys) + max(ys))/2 - height/2
+    if abs(ex) > 1e-6 or abs(ey) > 1e-6:
+        raise ValueError(
+            f"{name}: mounting features are off-centre by "
+            f"({ex:+.3f}, {ey:+.3f}) mm on a {W:.2f} x {height:.2f} plate")
+    return True
+
+
 def strip_plate(spacing=STUD_SPACING, rows=STUD_ROWS, margin=11.0, margin_y=6.5,
-                extra_bottom=1, keepout=3.6, w_centre=2.72, w_end=2.20, n_barbs=6):
+                extra_rows=1, keepout=3.6, w_centre=2.72, w_end=2.20, n_barbs=6):
     """Panel plate: posts on the +Z face, four square sockets for the studs.
 
     FOUR studs, in two rows. A stud in a vertical keyhole slot is a SLIDER, not a
@@ -163,18 +183,25 @@ def strip_plate(spacing=STUD_SPACING, rows=STUD_ROWS, margin=11.0, margin_y=6.5,
     A 4.0 mm socket and a 2.5 mm post clear at 3.25 mm; the earlier 6.5 mm was
     twice what was needed and deleted whole rings of posts for nothing.
 
-    `extra_bottom` adds rows below the lower stud row. Note that mechanically the
-    TOP matters more: the strip's weight acts about 15 mm out from the panel, so
-    the upper stud row is pulled away from the panel and the lower is pushed into
-    it. Rows above the top stud row resist that tension directly.
+    `extra_rows` adds that many post rows beyond the stud rows at BOTH ends, so
+    the studs stay centred on the plate. It was `extra_bottom` and added them only
+    below, which left 11.46 mm of plate under the lower stud row and 6.50 mm over
+    the upper one.
+
+    Symmetry is the point, but the extra row landed on the wrong side as well.
+    Mechanically the TOP matters more: the strip's weight acts about 15 mm out from
+    the panel, so the upper stud row is pulled AWAY from the panel while the lower
+    is pushed into it. Rows above the top stud row resist that tension directly,
+    and those were the rows that were missing.
 
     Posts are graded from `w_centre` at the middle to `w_end` at the extremes,
     since cumulative pitch error is zero at the plate centre and worst at the ends.
     """
     W = spacing + 2*margin
-    height = rows + 2*margin_y + extra_bottom*PITCH
-    studs = [(margin + dx, margin_y + extra_bottom*PITCH + dy)
+    height = rows + 2*margin_y + 2*extra_rows*PITCH
+    studs = [(margin + dx, margin_y + extra_rows*PITCH + dy)
              for dx in (0.0, spacing) for dy in (0.0, rows)]
+    check_symmetric("strip_plate", W, height, studs)
     h = SOCKET/2
     holes = [(sx-h, sy-h, sx+h, sy+h) for sx, sy in studs]
     tris = plate_with_holes(W, height, holes, PLATE_T2)
