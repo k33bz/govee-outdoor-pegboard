@@ -234,16 +234,16 @@ def _tri(v0, v1, v2, outward):
     return [((n[0]/L, n[1]/L, n[2]/L), v0, v1, v2)]
 
 
-def round_frustum(cx, cy, z0, z1, r0, r1, n=28):
+def round_frustum(cx, cy, z0, z1, r0, r1, n=28, phase=0.0):
     """Circular frustum as a closed solid. r0 at z0 tapering to r1 at z1.
 
     Caps are triangle fans from vertex 0; the side wall is quads. Every edge is
     used exactly twice, so the solid is watertight.
     """
-    b = [(cx + r0*_math.cos(2*_math.pi*i/n), cy + r0*_math.sin(2*_math.pi*i/n), z0)
-         for i in range(n)]
-    t = [(cx + r1*_math.cos(2*_math.pi*i/n), cy + r1*_math.sin(2*_math.pi*i/n), z1)
-         for i in range(n)]
+    b = [(cx + r0*_math.cos(2*_math.pi*i/n + phase),
+          cy + r0*_math.sin(2*_math.pi*i/n + phase), z0) for i in range(n)]
+    t = [(cx + r1*_math.cos(2*_math.pi*i/n + phase),
+          cy + r1*_math.sin(2*_math.pi*i/n + phase), z1) for i in range(n)]
     tris = []
     for i in range(1, n-1):
         tris += _tri(b[0], b[i], b[i+1], (0, 0, -1))

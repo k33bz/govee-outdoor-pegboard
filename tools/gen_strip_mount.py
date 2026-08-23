@@ -8,6 +8,7 @@ tests that directly and cheaply before committing to the big print.
 
 Everything prints flat on the bed, posts up, no supports.
 """
+import math
 import sys
 from pathlib import Path
 
@@ -143,7 +144,7 @@ STUD_ROWS = 28.50       # cross-width keyhole spacing, calipers (21.18 inner, 35
 
 
 def strip_plate(spacing=STUD_SPACING, rows=STUD_ROWS, margin=11.0, margin_y=6.5,
-                extra_bottom=1, keepout=3.6, w_centre=2.60, w_end=2.10, n_barbs=6):
+                extra_bottom=1, keepout=3.6, w_centre=2.72, w_end=2.20, n_barbs=6):
     """Panel plate: posts on the +Z face, four square sockets for the studs.
 
     FOUR studs, in two rows. A stud in a vertical keyhole slot is a SLIDER, not a
@@ -208,8 +209,17 @@ def strip_plate(spacing=STUD_SPACING, rows=STUD_ROWS, margin=11.0, margin_y=6.5,
             tris += barbed_post(px, py, PLATE_T2)
             continue
         w = w_centre - (w_centre - w_end) * (abs(px - cx) / half)
-        tris += frustum(px, py, PLATE_T2-SINK, PLATE_T2+PANEL_T+0.5, w/2, w/2)
-        tris += frustum(px, py, PLATE_T2+PANEL_T+0.5, PLATE_T2+PANEL_T+1.1, w/2, w*0.34)
+        # OCTAGONAL section, flats on the axes. The panel's holes have 0.698 mm
+        # corner radii, so a sharp square post is limited to 2.52 mm across flats
+        # before its corners foul them. Cutting the post's corners back removes
+        # that limit entirely: an octagon is bounded by the hole's inscribed
+        # circle, so it can go to the full 2.93 mm, and it still bears on a FLAT
+        # rather than a point.
+        r = w/(2*math.cos(math.pi/8))
+        ph = math.pi/8
+        tris += round_frustum(px, py, PLATE_T2-SINK, PLATE_T2+PANEL_T+0.5, r, r, 8, ph)
+        tris += round_frustum(px, py, PLATE_T2+PANEL_T+0.5, PLATE_T2+PANEL_T+1.1,
+                              r, r*0.34, 8, ph)
         widths.append(w)
     return tris, (W, height), widths, studs, sorted(barbed)
 

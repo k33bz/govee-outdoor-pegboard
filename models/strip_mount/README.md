@@ -228,38 +228,57 @@ bridges perfectly well printed posts-up.
 
 Barbs stand 2.8 mm proud of the far face, against 6 to 7 mm of clearance behind the panel.
 
-### Plain posts: checkerboard lattice, graded width
+### Plain posts: octagonal, checkerboard lattice, graded width
+
+**The holes have 0.698 mm corner radii** (measured over 72 clean holes on the scan, sd 0.117,
+side 2.929 mm). That matters more than it sounds, because it caps a sharp square post well
+below the hole size: the post's corners run into the hole's radiused corners at
+
+    s = H - 2R(1 - 1/sqrt(2)) = 2.520 mm
+
+The graded posts had been running to 2.53, so the widest of them were fouling the corners.
+That is very likely why the fit felt fussy toward the middle of the plate.
+
+**Answering the obvious question: rotating them 45 degrees is the worst possible move.** A
+diamond points its vertices straight into the radiused corners, so it loses 0.578 mm of
+diagonal and is capped at 1.66 mm side, 2.76 mm2, **44 per cent** of the flat square's area.
+It also bears on a *point* rather than a line under the strip's downward load.
+
+**Octagonal is the right answer.** Cutting the corners back leaves the post bounded by the
+hole's inscribed circle instead of its corners, so the radii stop mattering entirely and the
+post can go to the full 2.929 mm across flats. It still bears on a flat.
+
+| section | largest that clears | area | vs sharp square |
+|---|---|---|---|
+| sharp square, 45 deg | 1.662 mm side | 2.76 mm2 | 44 % |
+| sharp square, flat | 2.520 mm across flats | 6.35 mm2 | 100 % |
+| **octagon, flats on axes** | **2.929 mm across flats** | **7.11 mm2** | **112 %** |
+
+Posts are now octagons with vertices at 22.5 degrees, so flats land on the axes. Graded
+**2.20 mm at the ends to 2.69 mm at the middle**, up from 2.10 to 2.53, with real clearance
+this time rather than fouling.
+
+The six barbs stay rectangular: their 2.5 mm legs sit just inside the 2.520 sharp limit, and
+the flat outer face is what forms the ledge.
+
+### Lattice
 
 Posts sit on a **checkerboard** of the panel lattice, every hole where `i+j` is even.
-Nearest neighbours are `pitch x sqrt(2) = 7.02 mm` apart instead of 9.93, which is twice the
-density for the same span, so the grading still covers cumulative error unchanged.
+Nearest neighbours are `pitch x sqrt(2) = 7.02 mm` apart instead of 9.93, twice the density
+for the same span, so grading still covers cumulative error unchanged: 28 posts became 62.
 
-| pattern | nearest spacing | holes used | posts here |
-|---|---|---|---|
-| square, every 2nd hole (old) | 9.93 mm | 1 in 4 | 28 |
-| **checkerboard** | **7.02 mm** | 1 in 2 | **62** |
-| every hole | 4.96 mm | 1 in 1 | 112 |
+The socket keepout was also wrong. A 4.0 mm socket and a 2.5 mm post clear once their centres
+are 3.25 mm apart, and 6.5 had been used, deleting whole rings of posts for nothing. Closest
+post to a socket is now 4.32 mm. No lattice rotation can put the sockets in the gaps anyway,
+because they sit where the **strip's** keyholes dictate, 13.13 and 5.74 pitches apart.
 
-The keepout around each socket was also wrong: a 4.0 mm socket and a 2.5 mm post clear once
-their centres are 3.25 mm apart, and I had used 6.5, twice what was needed, deleting whole
-rings of posts for nothing. Closest post to a socket is now 4.32 mm.
+Widths are graded because cumulative pitch error is zero at the plate centre and worst at the
+extremes. Posts run full width to 0.5 mm past nominal panel thickness before tapering.
 
-Rotating the posts 45 degrees into diamonds was considered and rejected: a diamond inscribed
-in a 2.879 mm square hole has 2.04 mm sides, only 66 per cent of a 2.5 mm square post's
-section. Nor can any lattice rotation put the sockets in the gaps, because the sockets sit
-where the **strip's** keyholes dictate, 13.13 and 5.74 pitches apart, which are not lattice
-positions at all.
-
-Widths are graded 2.53 mm at the middle down to 2.10 mm at the ends, since cumulative pitch
-error is zero at the plate centre and worst at the extremes. They run full width to 0.5 mm
-past nominal panel thickness before tapering, so the hole stays filled if the panel runs
-thick and the lead-in never eats into the engaged length.
-
-`extra_bottom` adds rows below the lower stud row, currently one. Note the **top** matters
-more mechanically: the strip's weight acts about 15 mm out from the panel, so the upper stud
-row is pulled away from the panel while the lower is pushed into it. Rows above the top stud
-row resist that tension directly, so raise `margin_y` rather than `extra_bottom` if the plate
-ever needs more grip.
+`extra_bottom` adds rows below the lower stud row, currently one. The **top** matters more
+mechanically: the strip's weight acts about 15 mm out, so the upper stud row is pulled away
+from the panel while the lower is pushed into it. Raise `margin_y` rather than `extra_bottom`
+if it ever needs more grip.
 
 ## Assembly
 
