@@ -225,29 +225,35 @@ def strip_plate(spacing=STUD_SPACING, rows=STUD_ROWS, margin=11.0, margin_y=6.5,
 
 
 def strip_stud(head_d=6.2, neck_w=2.8, neck_l=5.5, neck_h=4.0, head_t=2.2,
-               spigot=SOCKET-0.1):
-    """One stud. Prints spigot down, so only one overhang: the head on the neck.
+               spigot=SOCKET-0.1, chamfer=0.5):
+    """One stud, modelled HEAD DOWN so it prints that way with no reorienting.
 
-    The neck is a RECTANGLE, not a circle. It only has to be narrow across the
-    slot; along the slot it has 16.80 mm to play with, so making it 2.8 x 5.5
-    instead of 2.6 round is nearly three times the cross-section for no loss of
-    fit. Its 6.17 mm diagonal still clears the 6.71 mm bulge on the way in.
+    Head first, then neck, then spigot. Going wide, narrow, slightly-wider means
+    the only unsupported feature is the 0.55 mm step from the 2.8 mm neck out to
+    the 3.9 mm spigot. Printed the other way up the head is a 1.70 mm overhang on
+    the neck, and the first layer is a 3.9 mm square instead of a 6.2 mm disc:
+    15.2 mm2 against 30.2, so it lifts far more easily. Same part either way, but
+    this orientation is the one that survives the printer.
 
-    Head 6.2 and neck width 2.8 are the largest sizes actually proven on the
-    stud gauge. The slot width W was never measured, so going beyond 2.8 would be
-    guesswork.
+    The head's entry chamfer becomes the first layer, 5.2 mm widening to 6.2 over
+    0.5 mm, which is a 45 degree wall and prints clean.
 
-    The neck's long axis runs along +Y, matching the slot direction when the strip
-    hangs length-horizontal. The square spigot in the square socket is what fixes
-    that orientation.
+    The neck is a rectangle, not a circle: it only has to be narrow ACROSS the
+    keyhole slot, and the slot is 16.80 mm long, so 2.8 x 5.5 is nearly three
+    times the section of a 2.6 round neck for no loss of fit. Its 6.17 mm diagonal
+    still clears the 6.71 mm bulge going in.
+
+    Head 6.2 and neck width 2.8 are the largest sizes proven on the stud gauge.
     """
-    z0 = PLATE_T2
-    tris = frustum(0, 0, 0.0, z0, spigot/2, spigot/2)
-    tris += _rect(-neck_w/2, -neck_l/2, z0-0.01, neck_w/2, neck_l/2, z0+neck_h)
-    tris += round_frustum(0, 0, z0+neck_h, z0+neck_h+head_t-0.5, head_d/2, head_d/2)
-    tris += round_frustum(0, 0, z0+neck_h+head_t-0.5, z0+neck_h+head_t,
-                          head_d/2, head_d/2-0.5)
-    return tris, (neck_w, neck_l, head_d)
+    z = 0.0
+    tris = round_frustum(0, 0, z, z+chamfer, head_d/2-chamfer, head_d/2)
+    z += chamfer
+    tris += round_frustum(0, 0, z, z+head_t-chamfer, head_d/2, head_d/2)
+    z += head_t-chamfer
+    tris += _rect(-neck_w/2, -neck_l/2, z-0.01, neck_w/2, neck_l/2, z+neck_h)
+    z += neck_h
+    tris += frustum(0, 0, z-0.01, z+PLATE_T2, spigot/2, spigot/2)
+    return tris, (neck_w, neck_l, head_d, z+PLATE_T2)
 
 
 if __name__ == "__main__":
@@ -270,6 +276,6 @@ if __name__ == "__main__":
           f"{len(studs)} sockets")
     tris, size = strip_stud()
     f = OUT / "strip_stud.stl"
-    write_stl(f, tris, b"strip stud: square spigot + 2.8x5.5 rect neck + 6.2 head")
-    print(f"{f.name:30s} {len(tris):5d} tris  neck {size[0]}x{size[1]} mm, "
-          f"head {size[2]} mm  (PRINT 4)")
+    write_stl(f, tris, b"strip stud HEAD DOWN: 6.2 head + 2.8x5.5 neck + square spigot")
+    print(f"{f.name:30s} {len(tris):5d} tris  neck {size[0]}x{size[1]}, head {size[2]}, "
+          f"tall {size[3]:.1f} mm  (PRINT 4, head down)")

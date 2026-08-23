@@ -156,6 +156,21 @@ The spigot is 3.9 mm into a 4.0 mm socket and is exactly the plate thickness, so
 flush with the panel side; once the plate is on the panel, the panel itself traps the studs.
 Glue is optional, not structural.
 
+### Print the stud HEAD DOWN
+
+| orientation | first layer | worst overhang |
+|---|---|---|
+| spigot down | 3.9 mm square, 15.2 mm2 | **1.70 mm** (neck 2.8 -> head 6.2) |
+| **head down** | **6.2 mm disc, 30.2 mm2** | **0.55 mm** (neck 2.8 -> spigot 3.9) |
+
+Head, then neck, then spigot goes wide, narrow, slightly-wider, so the only unsupported
+feature is the 0.55 mm step out to the spigot. The other way up the head is a 1.70 mm
+overhang hanging off the neck, on a first layer half the area. The STL is modelled head down
+so it lands that way with no reorienting.
+
+The head's entry chamfer becomes the first layer, 5.2 mm widening to 6.2 over 0.5 mm, which
+is a 45 degree wall and prints clean.
+
 ### The neck is a rectangle, not a circle
 
 A round 2.6 mm neck was structurally fine, roughly 60x margin even on layer adhesion, but it
@@ -279,6 +294,23 @@ extremes. Posts run full width to 0.5 mm past nominal panel thickness before tap
 mechanically: the strip's weight acts about 15 mm out, so the upper stud row is pulled away
 from the panel while the lower is pushed into it. Raise `margin_y` rather than `extra_bottom`
 if it ever needs more grip.
+
+## Socket orientation: tested, no benefit
+
+Rotating the stud sockets 45 degrees so they sit as diamonds between the posts was tried and
+measured with a proper polygon separation test. **Five posts are displaced either way**, out
+of 67, so there is nothing to recover.
+
+The reason is that the sockets are not free to move. They sit where the strip's keyholes
+dictate, 65.20 and 28.50 mm apart, which is `13.13` and `5.74` pitches: never a lattice
+position. A socket therefore always lands somewhere arbitrary among the posts, and rotating
+it about its own centre does not change where it sits relative to them.
+
+For the record the checkerboard's corridors are not symmetric either -- posts are 7.02 mm
+apart along the diagonals and 9.93 mm along the axes -- so if anything the axis-aligned
+orientation has the wider gaps to work with.
+
+The keepout correction, 6.5 mm down to 3.6, is what actually recovered posts here.
 
 ## Assembly
 
