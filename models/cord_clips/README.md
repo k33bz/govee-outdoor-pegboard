@@ -8,7 +8,7 @@ answer different questions about how much you want the cord pinned down.
 | holds the cord | on two sides, air at the flanks | **on three sides, wrapped** | in an open U |
 | cord is | captive | captive | **lays in, lifts out** |
 | to reroute | pull the mount out of the panel | pull the mount out of the panel | just lift the cord |
-| mass | 0.42 - 0.81 g | **0.33 - 0.58 g** | 1.4 - 1.7 g |
+| mass | 0.42 - 0.81 g | **0.35 - 0.60 g** | 1.4 - 1.7 g |
 | legs | 2 | 2 | 4 |
 | supports | none | none | none |
 | glue | none | none | none |
@@ -30,10 +30,14 @@ This is the sketch: an arch hugging the cord, legs splaying down through the pan
 
 | file | legs | size | mass | bed contact |
 |---|---|---|---|---|
-| `cord_arch_06mm` | 2 pitches | 12.5 x 6.0 x 13.3 | 0.33 g | 25.9 mm2 |
-| `cord_arch_08mm` | 3 pitches | 17.5 x 6.0 x 15.2 | 0.41 g | 30.9 mm2 |
-| `cord_arch_10mm` | 3 pitches | 17.5 x 6.0 x 17.1 | 0.47 g | 36.0 mm2 |
-| `cord_arch_13mm` | 4 pitches | 22.5 x 6.0 x 19.9 | 0.58 g | 43.6 mm2 |
+| `cord_arch_06mm` | 2 pitches | 13.3 x 6.0 x 14.8 | 0.35 g | 25.9 mm2 |
+| `cord_arch_08mm` | 3 pitches | 18.3 x 6.0 x 16.7 | 0.42 g | 30.9 mm2 |
+| `cord_arch_10mm` | 3 pitches | 18.3 x 6.0 x 18.6 | 0.49 g | 36.0 mm2 |
+| `cord_arch_13mm` | 4 pitches | 23.3 x 6.0 x 21.4 | 0.60 g | 43.6 mm2 |
+
+Sizes are measured off the STL. They grew by 1.5 mm in height when the shared
+`barbed_post` went from three ledges to five; the clips pick that up automatically
+because they use the same legs as the plate.
 
 The inner surface is a circle of `cord_d/2 + 0.3` centred `cord_d/2` above the panel, so
 it sits on the cord rather than clamping it.
@@ -147,7 +151,7 @@ to latch. Turn supports off.
 
 ### Brim on the arch
 
-The arch stands 17.1 mm tall on 36 mm2 of bed contact, because printing crown-down means
+The arch stands 18.6 mm tall on 36 mm2 of bed contact, because printing crown-down means
 only the crown flat touches. That is enough area to stick, but it is a narrow base under a
 part whose legs splay out to 17.5 mm at the top, so the nozzle has leverage on it. A 5 mm
 brim removes the question. The staple lands its whole 20.5 x 6.0 mm bridge on the bed and
