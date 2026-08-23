@@ -213,7 +213,7 @@ so six of the posts are barbed snap-fits and the other 22 are plain locators.
 
 ### Barbed posts -- christmas tree
 
-Split down the middle so the legs pinch on the way through, then **three ledges** rather than
+Split down the middle so the legs pinch on the way through, then **five ledges** rather than
 one.
 
 A single ledge at exactly the panel thickness has zero margin, and the first version failed
@@ -221,16 +221,22 @@ that way: it sat dead on the 2.9 mm back face and would not latch, because any u
 a slightly thick panel or a little under-extrusion keeps it inside the hole. Simply
 lengthening the shaft trades that fault for the plate rattling by whatever was added.
 
-Three ledges solve both. Whichever one clears the far face is the one that latches:
+Several ledges solve both. Whichever one clears the far face is the one that latches:
 
 | ledge | at | grips a panel of |
 |---|---|---|
 | 1 | 2.9 mm | 2.3 to 2.9 mm |
 | 2 | 3.5 mm | 2.9 to 3.5 mm |
 | 3 | 4.1 mm | 3.5 to 4.1 mm |
+| 4 | 4.7 mm | 4.1 to 4.7 mm |
+| 5 | 5.3 mm | 4.7 to 5.3 mm |
 
-So it holds anything from **2.3 to 4.1 mm** and does not care whether the plate seated
+So it holds anything from **2.3 to 5.3 mm** and does not care whether the plate seated
 perfectly.
+
+The 2.9 mm test board is not the enclosure. The big enclosure's panel has not been measured
+and moulded ABS panels of that size are usually thicker, which is the case ledges 4 and 5
+exist for: if it comes in at 4 or 5 mm the same plate still latches.
 
 | | |
 |---|---|
@@ -249,7 +255,23 @@ in y would engage more sides but could not compress. Each ledge is a square step
 a chamfer, because a 45 degree undercut cams out under load while a 0.45 mm flat overhang
 bridges perfectly well printed posts-up.
 
-Barbs stand 2.8 mm proud of the far face, against 6 to 7 mm of clearance behind the panel.
+### Length, and what it is limited by
+
+| | printed first | now |
+|---|---|---|
+| plain post, proud of the plate | 4.0 mm | **5.6 mm** |
+| plain post, past a 2.9 mm panel | 1.1 mm | **2.7 mm** |
+| barbed post, proud of the plate | 5.7 mm | **7.2 mm** |
+| barbed post, past a 2.9 mm panel | 2.8 mm | **4.3 mm** |
+
+The limit is the cabinet, not the design: 2.9 mm of panel plus 6 mm of clearance behind it is
+8.9 mm, so at 7.2 mm the barbs still keep 1.7 mm in hand on the pessimistic figure.
+
+**What the extra length on the plain posts does not do is add strength.** Shear is reacted
+inside the panel thickness, so material out the back carries nothing. It earns its place on
+assembly: 56 posts have to enter 56 holes at once, and posts that reach further find their
+holes before the barbs reach theirs, so the plate self-aligns before anything has to
+compress.
 
 ### Plain posts: octagonal, checkerboard lattice, graded width
 

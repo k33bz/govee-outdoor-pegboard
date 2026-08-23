@@ -113,8 +113,8 @@ each one constrains rotation on its own. Two legs do not form a hinge.
 
 Same panel numbers throughout: 4.9643 mm pitch, 2.929 mm holes with 0.698 mm corner radii,
 2.9 mm panel. Legs use the same octagonal section, so the hole's corner radii do not limit
-them, and the same christmas-tree barb with three ledges at 2.9 / 3.5 / 4.1 mm, which grips
-any panel from 2.3 to 4.1 mm.
+them, and the same christmas-tree barb, now five ledges at 2.9 / 3.5 / 4.1 / 4.7 / 5.3 mm,
+which grips any panel from 2.3 to 5.3 mm.
 
 Leg spacing is always a whole number of panel pitches, so the legs land on real holes; the
 smallest spacing that leaves the cord room is chosen automatically.

@@ -91,7 +91,7 @@ def loft_rect(a, b, z0, z1):
 
 
 def barbed_post(cx, cy, z, w=2.5, slot=0.9, barb=3.4, tip=1.3,
-                panel_t=PANEL_T, teeth=3, tooth=0.6, tip_len=1.0):
+                panel_t=PANEL_T, teeth=5, tooth=0.6, tip_len=1.3):
     """A split post with a CHRISTMAS-TREE barb, built as two independent legs.
 
     A single ledge set at exactly the panel thickness has zero margin: the first
@@ -217,8 +217,13 @@ def strip_plate(spacing=STUD_SPACING, rows=STUD_ROWS, margin=11.0, margin_y=6.5,
         # rather than a point.
         r = w/(2*math.cos(math.pi/8))
         ph = math.pi/8
-        tris += round_frustum(px, py, PLATE_T2-SINK, PLATE_T2+PANEL_T+0.5, r, r, 8, ph)
-        tris += round_frustum(px, py, PLATE_T2+PANEL_T+0.5, PLATE_T2+PANEL_T+1.1,
+        # Length is budgeted against the 6-7 mm of rear clearance, not chosen by
+        # eye: 2.9 mm of panel plus 2.7 mm out the back leaves over 3 mm spare on
+        # the pessimistic 6 mm figure. The protruding part carries no load -- shear
+        # is reacted inside the panel thickness -- but it makes the plate far easier
+        # to start, because these find their holes before the barbs reach theirs.
+        tris += round_frustum(px, py, PLATE_T2-SINK, PLATE_T2+PANEL_T+2.0, r, r, 8, ph)
+        tris += round_frustum(px, py, PLATE_T2+PANEL_T+2.0, PLATE_T2+PANEL_T+2.6,
                               r, r*0.34, 8, ph)
         widths.append(w)
     return tris, (W, height), widths, studs, sorted(barbed)
