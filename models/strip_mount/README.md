@@ -182,36 +182,51 @@ face and the stud cannot push through.
 
 | part | size | mass | print |
 |---|---|---|---|
-| `strip_plate.stl` | 87.2 x 41.5 x 7.3 mm | 11.3 g | 1 off, posts up |
+| `strip_plate.stl` | 87.2 x 41.5 x 8.1 mm | 11.4 g | 1 off, posts up |
 | `strip_stud.stl` | 6.2 mm head, 2.8 x 5.5 neck, 8.6 mm tall | 0.20 g | **4 off**, spigot down |
 
 **Panel is 2.9 mm thick**, not the 1.5 mm first assumed. That is enough material to grab,
 so six of the posts are barbed snap-fits and the other 22 are plain locators.
 
-### Barbed posts
+### Barbed posts -- christmas tree
 
-Split down the middle so the two legs pinch on the way through and spring back past the far
-face. Modelled as two independent closed solids, so the slot needs no boolean.
+Split down the middle so the legs pinch on the way through, then **three ledges** rather than
+one.
+
+A single ledge at exactly the panel thickness has zero margin, and the first version failed
+that way: it sat dead on the 2.9 mm back face and would not latch, because any under-seating,
+a slightly thick panel or a little under-extrusion keeps it inside the hole. Simply
+lengthening the shaft trades that fault for the plate rattling by whatever was added.
+
+Three ledges solve both. Whichever one clears the far face is the one that latches:
+
+| ledge | at | grips a panel of |
+|---|---|---|
+| 1 | 2.9 mm | 2.3 to 2.9 mm |
+| 2 | 3.5 mm | 2.9 to 3.5 mm |
+| 3 | 4.1 mm | 3.5 to 4.1 mm |
+
+So it holds anything from **2.3 to 4.1 mm** and does not care whether the plate seated
+perfectly.
 
 | | |
 |---|---|
 | post | 2.5 mm square, 0.9 mm slot, 0.8 mm legs |
-| barb | 3.4 mm across the ledge, into a 2.879 mm hole |
-| deflection | 0.26 mm per leg over 4.9 mm of free length |
-| peak strain | **1.3 %**, against PLA yielding around 2 to 3 % |
+| barb | 3.4 mm across each ledge, into a 2.879 mm hole |
+| deflection | 0.26 mm per leg over 5.7 mm of free length |
+| peak strain | **0.96 %**, against PLA yielding around 2 to 3 % |
+| insertion | about 19 N for all six, roughly 2 kg |
 | holding | 78 N per post, against 3.7 N of tip-out total |
 
-Strength was never the question; the only real risk was snapping a leg on insertion, and
-1.3 % strain says it will flex rather than break.
+The longer legs come free with the extra teeth: strain falls from 1.30 to 0.96 per cent and
+insertion force, going as 1/L^3, from about 30 N to 19 N.
 
-Only the **outer** face of each leg flares. Flaring in y as well would engage all four sides
-but could not compress, since the slot only allows movement in x. The ledge is a square step
-rather than a chamfer, because a 45 degree undercut can cam out under load while a 0.45 mm
-flat overhang bridges perfectly well when printed posts-up.
+Only the **outer** face of each leg flares; the slot only permits movement in x, so flaring
+in y would engage more sides but could not compress. Each ledge is a square step rather than
+a chamfer, because a 45 degree undercut cams out under load while a 0.45 mm flat overhang
+bridges perfectly well printed posts-up.
 
-**Check there is clearance behind the panel.** The barbs stand 2.0 mm proud of the far face.
-The panel is an internal mounting panel on standoffs so there should be room, but if it sits
-flat against something the barbs will hold it off.
+Barbs stand 2.8 mm proud of the far face, against 6 to 7 mm of clearance behind the panel.
 
 ### Plain posts, graded
 
@@ -220,8 +235,9 @@ the plate centre and worst at the extremes, so a uniform post is either slack ev
 binds at the tips. Grading puts a firm locating fit where error cannot accumulate and
 generous clearance where it can.
 
-They now run full width through the whole 2.9 mm and taper only **beyond** the far face, so
-the lead-in never eats into the engaged length.
+They run full width to 0.5 mm **past** the nominal panel thickness before the taper starts,
+so the hole stays filled even if the panel runs thick, and the lead-in never eats into the
+engaged length.
 
 Misalignment at a post `n` pitches from centre is `n x delta`, so each sets its own limit:
 
